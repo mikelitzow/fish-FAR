@@ -12,7 +12,7 @@ source("./scripts/stan_utils.R")
 
 
 ## Read in data --------------------------------------------
-cod.data <- read.csv("data/cpue.data.csv", row.names = 1)
+cod.data <- read.csv("./data/cpue.data.csv")
 cod.data$bay_fac <- as.factor(cod.data$bay)
 cod.data$year_fac <- as.factor(cod.data$year)
 cod.data$site_fac <- as.factor(cod.data$site)
@@ -22,13 +22,15 @@ cod.data$date <- as.Date(cod.data$julian,
                          origin = paste0(cod.data$year, "-01-01"))
 cod.data$ssb <- cod.data$cod.ssb
 
-temp.data <- read.csv("climate/godas anomalies.csv")
+temp.data <- read.csv("./data/godas.anomalies.csv")
 cod.data$temp.anom <- temp.data$mean.anom[match(as.numeric(as.character(cod.data$year)), temp.data$year)]
 
 
 ## brms: setup ---------------------------------------------
 
 ## Define model formulas
+## Limiting knots to 3 to prevent overfitting
+
 cod0_formula <-  bf(cod ~ s(julian, k = 3) + (1 | bay_fac),
                      zi ~ s(julian, k = 3) + (1 | bay_fac))
 
@@ -49,8 +51,8 @@ zinb <- zero_inflated_negbinomial(link = "log", link_shape = "log", link_zi = "l
 
 
 ## Show default priors
-# get_prior(cod0_formula, cod.data, family = zinb)
-# get_prior(cod0_formula_nb, cod.data, family = nb)
+get_prior(cod0_formula, cod.data, family = zinb)
+
 
 ## Set priors
 priors_zinb_k3 <- c(set_prior("normal(0, 3)", class = "b"),
@@ -234,13 +236,13 @@ ggsave("./figs/temp.anom_predicted_effect_cod2sg_zinb_k3.png", width = 3, height
 ## Julian predictions ##
 
 ## 95% CI
-ce1s_1 <- conditional_effects(cod2sg3_zinb_k3, effect = "julian", re_formula = NA,
+ce1s_1 <- conditional_effects(cod2sg_zinb_k3, effect = "julian", re_formula = NA,
                               probs = c(0.025, 0.975))
 ## 90% CI
-ce1s_2 <- conditional_effects(cod2sg3_zinb_k3, effect = "julian", re_formula = NA,
+ce1s_2 <- conditional_effects(cod2sg_zinb_k3, effect = "julian", re_formula = NA,
                               probs = c(0.05, 0.95))
 ## 80% CI
-ce1s_3 <- conditional_effects(cod2sg3_zinb_k3, effect = "julian", re_formula = NA,
+ce1s_3 <- conditional_effects(cod2sg_zinb_k3, effect = "julian", re_formula = NA,
                               probs = c(0.1, 0.9))
 dat_ce <- ce1s_1$julian
 dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
@@ -259,19 +261,19 @@ g <- ggplot(dat_ce) +
     labs(x = "Day of year", y = "Cod abundance") +
     theme_bw()
 print(g)
-ggsave("./figs/julian_predicted_effect_cod2sg3_zinb_k3.png", width = 5, height = 4)
+ggsave("./figs/julian_predicted_effect_cod2sg_zinb_k3.png", width = 5, height = 4)
 
 
 ## SSB predictions ##
 
 ## 95% CI
-ce1s_1 <- conditional_effects(cod2sg3_zinb_k3, effect = "ssb", re_formula = NA,
+ce1s_1 <- conditional_effects(cod2sg_zinb_k3, effect = "ssb", re_formula = NA,
                               probs = c(0.025, 0.975))
 ## 90% CI
-ce1s_2 <- conditional_effects(cod2sg3_zinb_k3, effect = "ssb", re_formula = NA,
+ce1s_2 <- conditional_effects(cod2sg_zinb_k3, effect = "ssb", re_formula = NA,
                               probs = c(0.05, 0.95))
 ## 80% CI
-ce1s_3 <- conditional_effects(cod2sg3_zinb_k3, effect = "ssb", re_formula = NA,
+ce1s_3 <- conditional_effects(cod2sg_zinb_k3, effect = "ssb", re_formula = NA,
                               probs = c(0.1, 0.9))
 dat_ce <- ce1s_1$ssb
 dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
@@ -290,51 +292,4 @@ g <- ggplot(dat_ce) +
     labs(x = "SSB", y = "Cod abundance") +
     theme_bw()
 print(g)
-ggsave("./figs/SSB_predicted_effect_cod2sg3_zinb_k3.png", width = 5, height = 4)
-
-
-## Conditional smooths -------------------------------------
-
-## SST smooths ##
-cs1s_1 <- conditional_smooths(cod2s_zinb_k3, smooths = "s(sst,k=5)",
-                              probs = c(0.025, 0.975))
-
-dat_cs1 <- cs1s_1[["mu: s(sst,k=5)"]]
-dat_cs2 <- cs1s_1[["zi: s(sst,k=5)"]]
-dat_cs1[["label"]] <- "Cod abundance"
-dat_cs2[["label"]] <- "Probability of zero cod"
-dat_cs <- rbind(dat_cs1, dat_cs2)
-
-g <- ggplot(dat_cs) +
-    aes(x = effect1__, y = estimate__) +
-    geom_hline(yintercept = 0, color = "grey50", linetype = 2) +
-    geom_ribbon(aes(ymin = lower__, ymax = upper__), fill = "grey80") +
-    geom_line(size = 1.5, color = "red3") +
-    labs(x = "SST", y = "Partial effect") +
-    facet_wrap( ~ label, ncol = 1, scales = "free") +
-    theme_bw()
-print(g)
-ggsave("./figs/smooths_sst_cod2s_zinb_k3.png", width = 5, height = 6)
-
-
-
-## Julian smooths ##
-cs1s_1 <- conditional_smooths(cod2s_zinb_k3, smooths = "s(julian,k=5)",
-                              probs = c(0.025, 0.975))
-
-dat_cs1 <- cs1s_1[["mu: s(julian,k=5)"]]
-dat_cs2 <- cs1s_1[["zi: s(julian,k=5)"]]
-dat_cs1[["label"]] <- "Cod abundance"
-dat_cs2[["label"]] <- "Probability of zero cod"
-dat_cs <- rbind(dat_cs1, dat_cs2)
-
-g <- ggplot(dat_cs) +
-    aes(x = effect1__, y = estimate__) +
-    geom_hline(yintercept = 0, color = "grey50", linetype = 2) +
-    geom_ribbon(aes(ymin = lower__, ymax = upper__), fill = "grey80") +
-    geom_line(size = 1.5, color = "red3") +
-    labs(x = "Day of year", y = "Partial effect") +
-    facet_wrap( ~ label, ncol = 1, scales = "free") +
-    theme_bw()
-print(g)
-ggsave("./figs/smooths_julian_cod2s_zinb_k3.png", width = 5, height = 6)
+ggsave("./figs/SSB_predicted_effect_cod2sg_zinb_k3.png", width = 5, height = 4)
