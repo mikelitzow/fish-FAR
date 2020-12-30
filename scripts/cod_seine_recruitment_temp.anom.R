@@ -1,6 +1,7 @@
 ## Cod analysis - effect of temperature on seine recruitment estimates
 ## Negative binomial
 ## Smooths limited to k=3 to avoid over-fitting
+## For Fig. 2a in the draft
 
 library(ggplot2)
 library(plyr)
@@ -179,7 +180,7 @@ cod1sg_zinb_k3 <- readRDS("./output/cod1sg_zinb_k3.rds")
 cod2sg_zinb_k3 <- readRDS("./output/cod2sg_zinb_k3.rds")
 
 loo(cod0_zinb_k3, cod0s_zinb_k3,
-    cod1sg_zinb_k3, cod2sg_zinb_k3)
+    cod1sg_zinb_k3, cod2sg_zinb_k3, moment_match = T, reloo = T)
 
 looic <- c(cod0_zinb_k3$criteria$loo$estimates["looic", "Estimate"],
            cod0s_zinb_k3$criteria$loo$estimates["looic", "Estimate"],
@@ -228,7 +229,7 @@ g <- ggplot(dat_ce) +
 print(g)
 
 ggsave("./figs/temp.anom_predicted_effect_cod2sg_zinb_k3.png", width = 3, height = 2)
-
+## this is Fig. 2a in the draft
 
 
 ## Julian predictions ##
