@@ -13,7 +13,7 @@ source("./scripts/stan_utils.R")
 
 
 ## Read in data --------------------------------------------
-cod.data <- read.csv("data/cpue.data.csv", row.names = 1)
+cod.data <- read.csv("data/cpue.data.csv")
 cod.data$bay_fac <- as.factor(cod.data$bay)
 cod.data$year_fac <- as.factor(cod.data$year)
 cod.data$site_fac <- as.factor(cod.data$site)
@@ -70,10 +70,12 @@ cod0_zinb_k3 <- brm(cod0_formula,
                  data = cod.data,
                  prior = priors_zinb_k3,
                  family = zinb,
+                 seed = 1234,
                  cores = 4, chains = 4, iter = 3000,
                  save_pars = save_pars(all = TRUE),
                  control = list(adapt_delta = 0.99, max_treedepth = 10))
-cod0_zinb_k3  <- add_criterion(cod0_zinb_k3, c("loo", "bayes_R2"), moment_match = TRUE)
+cod0_zinb_k3  <- add_criterion(cod0_zinb_k3, c("loo", "bayes_R2"),
+                               moment_match = TRUE)
 saveRDS(cod0_zinb_k3, file = "output/cod0_zinb_k3.rds")
 
 cod0_zinb_k3 <- readRDS("./output/cod0_zinb_k3.rds")
@@ -98,10 +100,13 @@ cod0s_zinb_k3 <- brm(cod0s_formula,
                   data = cod.data,
                   prior = priors_zinb_k3,
                   family = zinb,
+                  seed = 1234,
                   cores = 4, chains = 4, iter = 4000,
                   save_pars = save_pars(all = TRUE),
                   control = list(adapt_delta = 0.99, max_treedepth = 10))
-cod0s_zinb_k3  <- add_criterion(cod0s_zinb_k3, c("loo", "bayes_R2"), moment_match = TRUE)
+cod0s_zinb_k3  <- add_criterion(cod0s_zinb_k3, c("loo", "bayes_R2"),
+                                moment_match = TRUE, reloo = FALSE,
+                                cores = 4, k_threshold = 0.7)
 saveRDS(cod0s_zinb_k3, file = "output/cod0s_zinb_k3.rds")
 
 cod0s_zinb_k3 <- readRDS("./output/cod0s_zinb_k3.rds")
@@ -123,10 +128,12 @@ dev.off()
 
 
 ## fit: GODAS anomaly models -------------------------------
+## reloo**
 cod1sg_zinb_k3 <- brm(cod1sg_formula,
                    data = cod.data,
                    prior = priors_zinb_k3,
                    family = zinb,
+                   seed = 1234,
                    cores = 4, chains = 4, iter = 3000,
                    save_pars = save_pars(all = TRUE),
                    control = list(adapt_delta = 0.999, max_treedepth = 10))
@@ -152,6 +159,7 @@ cod2sg_zinb_k3 <- brm(cod2sg_formula,
                    data = cod.data,
                    prior = priors_zinb_k3,
                    family = zinb,
+                   seed = 1234,
                    cores = 4, chains = 4, iter = 3000,
                    save_pars = save_pars(all = TRUE),
                    control = list(adapt_delta = 0.999, max_treedepth = 10))

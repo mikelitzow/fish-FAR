@@ -327,6 +327,24 @@ names(poll.R2$fit)
 poll.R2 <- readRDS("./output/poll_R_FAR_w_SE.rds")
 plot(conditional_effects(poll.R2), points = TRUE) # this isn't working!
 
+## Predict manually
+pred_far <- data.frame(FAR = seq(min(obs.dat$FAR), max(obs.dat$FAR), length.out = 100),
+                       FAR.SE = 0.00001) ## set measurement error to zero
+pred_full <- posterior_epred(poll.R2, newdata = pred_far)
+pred <- data.frame(estimate = apply(pred_full, 2, mean),
+                   upper = apply(pred_full, 2, quantile, probs = 0.975),
+                   lower = apply(pred_full, 2, quantile, probs = 0.025))
+pred_df <- cbind(pred_far, pred)
+g <- ggplot(pred_df) +
+    geom_ribbon(aes(x = FAR, ymin = lower, ymax = upper), fill = "grey90") +
+    geom_line(aes(x = FAR, y = estimate), color = "red3") +
+    geom_point(data = obs.dat, aes(x = FAR, y = sc.log.pollR0), color = "grey25")
+    ## geom_smooth(data = obs.dat, aes(x = FAR, y = sc.log.pollR0), method = "lm",
+    ##             formula = y ~ x + I(x^2), se = FALSE, color = "blue") +
+    ## geom_segment(data = obs.dat, aes(y = sc.log.pollR0, yend = sc.log.pollR0,
+    ##                                  x = FAR - FAR.SE, xend = FAR + FAR.SE))
+print(g)
+
 check_hmc_diagnostics(poll.R2$fit)
 neff_lowest(R2$fit)
 rhat_highest(R2$fit)
