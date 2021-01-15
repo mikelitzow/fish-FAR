@@ -11,7 +11,7 @@ source("./scripts/stan_utils.R")
 library(MARSS)
 theme_set(theme_bw())
 
-## Fit brms model to beac seine data --------------------------------------------
+## Fit brms model to beach seine data --------------------------------------------
 # read in data
 poll.data <- read.csv("data/cpue.data.csv")
 poll.data$bay_fac <- as.factor(poll.data$bay)
@@ -21,7 +21,7 @@ poll.data$bay_site_fac <- as.factor(paste0(poll.data$bay, "_", poll.data$site))
 poll.data$present <- ifelse(poll.data$pollock > 0, 1, 0)
 poll.data$date <- as.Date(poll.data$julian,
                           origin = paste0(poll.data$year, "-01-01"))
-# restict to long-term sites and AK Peninsula bays with high positive catches
+# restrict to long-term sites and AK Peninsula bays with high positive catches
 levels(poll.data$bay_fac)
 keep <- c("Agripina", "Anton Larson Bay", "Balboa", "Cook Bay", "Mitrofania", "Port Wrangell") 
 poll.data <- poll.data %>%
@@ -222,9 +222,10 @@ loadings <- data.frame(names = c("Larval", "Age-0 trawl", "Age-0 seine"),
 ggplot(loadings, aes(names, loading)) +
   geom_bar(stat="identity", fill="light grey") +
   geom_errorbar(aes(ymin=lowCI, ymax=upCI), width=0.2) +
-  theme(axis.title.x = element_blank()) 
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(angle=45, vjust=0.5)) 
 
-ggsave("./figs/reduced_pollock_DFA_loadings.png", width=3, height=3, units = 'in')
+ggsave("./figs/reduced_pollock_DFA_loadings.png", width=2, height=2, units = 'in')
 
 
 # plot trend
@@ -237,7 +238,7 @@ ggplot(trend, aes(year, trend)) +
   geom_ribbon(aes(ymin=ymin, ymax=ymax), fill="grey90") +
   geom_line(color="red") 
 
-ggsave("./figs/reduced_pollock_DFA_trend.png", width=5, height=3, units = 'in')
+ggsave("./figs/reduced_pollock_DFA_trend.png", width=3, height=2, units = 'in')
 
 ## fit brms model - FAR as factor ------------------------------------
 
@@ -419,7 +420,7 @@ g <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Fraction of attributable risk", y = "Recruitment anomaly") +
+  labs(x = "Fraction of attributable risk", y = "DFA trend") +
   theme_bw()+
   geom_rug(aes(x=rug.anom, y=NULL))
 print(g)
@@ -602,6 +603,210 @@ dfa1_brm  <- readRDS("./output/dfa1_brm.rds")
 dfa2_brm  <- readRDS("./output/dfa2_brm.rds")
 
 loo(dfa1_brm, dfa2_brm)
+
+## DFA as a predictor of model R - brms -------------------------
+# load assessment time series
+recr <- read.csv("data/cod_pollock_assessment_2020_SAFEs.csv", row.names = 1)
+
+# limiting to 2019 and earlier 
+plot <- data.frame(year=1987:2019,
+                   ln_assessment_model_R=log(recr$pollR0.2020[row.names(recr) %in% 1987:2019]),
+                   dfa_trend=trend$trend[trend$year %in% 1987:2019])
+
+cor(plot) # r = 0.64
+
+ggplot(plot, aes(dfa_trend, ln_assessment_model_R)) +
+  geom_text(aes(label=year)) +
+  ggtitle("1987-2019") +
+  theme_bw()
+
+## fit a brms model ------------------------------------------
+
+# first, clean up data
+dat <- plot
+
+names(dat)[2] <- "model"
+
+## brms: setup ---------------------------------------------
+
+## Define model formulas
+## Limiting knots to 3 to prevent overfitting
+
+pollR1_formula <-  bf(model ~ s(dfa_trend, k = 3))
+
+
+## fit --------------------------------------
+pollR1_brm <- brm(pollR1_formula,
+                 data = dat,
+                 cores = 4, chains = 4, iter = 3000,
+                 save_pars = save_pars(all = TRUE),
+                 control = list(adapt_delta = 0.99, max_treedepth = 10))
+pollR1_brm  <- add_criterion(pollR1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(pollR1_brm, file = "output/pollR1_brm.rds")
+
+pollR1_brm <- readRDS("./output/pollR1_brm.rds")
+check_hmc_diagnostics(pollR1_brm$fit)
+neff_lowest(pollR1_brm$fit)
+rhat_highest(pollR1_brm$fit)
+summary(pollR1_brm)
+bayes_R2(pollR1_brm)
+plot(pollR1_brm$criteria$loo, "k")
+plot(conditional_smooths(pollR1_brm), ask = FALSE)
+y <- trend$trend
+yrep_pollR1_brm  <- fitted(pollR1_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_pollR1_brm[sample(nrow(yrep_pollR1_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("pollR1_brm")
+pdf("./figs/trace_pollR1_brm.pdf", width = 6, height = 4)
+trace_plot(pollR1_brm$fit)
+dev.off()
+
+
+## plot predicted values pollR1_brm ---------------------------------------
+## 95% CI
+ce1s_1 <- conditional_effects(pollR1_brm, effect = "dfa_trend", re_formula = NA,
+                              probs = c(0.025, 0.975))
+## 90% CI
+ce1s_2 <- conditional_effects(pollR1_brm, effect = "dfa_trend", re_formula = NA,
+                              probs = c(0.05, 0.95))
+## 80% CI
+ce1s_3 <- conditional_effects(pollR1_brm, effect = "dfa_trend", re_formula = NA,
+                              probs = c(0.1, 0.9))
+dat_ce <- ce1s_1$dfa_trend
+dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
+dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
+dat_ce[["upper_90"]] <- ce1s_2$dfa_trend[["upper__"]]
+dat_ce[["lower_90"]] <- ce1s_2$dfa_trend[["lower__"]]
+dat_ce[["upper_80"]] <- ce1s_3$dfa_trend[["upper__"]]
+dat_ce[["lower_80"]] <- ce1s_3$dfa_trend[["lower__"]]
+
+g <- ggplot(dat_ce) +
+  aes(x = effect1__, y = estimate__) +
+  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
+  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
+  geom_line(size = 1, color = "red3") +
+  labs(x = "DFA trend", y = "ln(model recruitment)") +
+  geom_text(data=dat, aes(dfa_trend, model, label = year), size=1.5) +
+  theme_bw()
+
+print(g)
+
+ggsave("./figs/pollR1_brm_dfa.png", width=3, height=2.5, units = 'in')
+
+## second round of model-fitting adding seine:FAR interaction ------------
+
+# load FAR estimates
+obs_far_fixef <- readRDS("./output/obs_far_fixef.rds")
+
+ce1s_1 <- conditional_effects(obs_far_fixef, probs = c(0.025, 0.975))
+obs <- ce1s_1$year_fac %>%
+  select(year_fac, estimate__)
+
+obs$year <- as.numeric(as.character(obs$year_fac))
+
+dat <- left_join(dat, obs)
+names(dat)[5] <- "far"
+
+## Define model formulas
+
+pollR2_formula <-  bf(model ~ s(dfa_trend, k = 3) + s(far, k=3))
+
+
+## fit --------------------------------------
+pollR2_brm <- brm(pollR2_formula,
+                 data = dat,
+                 cores = 4, chains = 4, iter = 3000,
+                 save_pars = save_pars(all = TRUE),
+                 control = list(adapt_delta = 0.99, max_treedepth = 10))
+pollR2_brm  <- add_criterion(pollR2_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(pollR2_brm, file = "output/pollR2_brm.rds")
+
+pollR2_brm <- readRDS("./output/pollR2_brm.rds")
+check_hmc_diagnostics(pollR2_brm$fit)
+neff_lowest(pollR2_brm$fit)
+rhat_highest(pollR2_brm$fit)
+summary(pollR2_brm)
+bayes_R2(pollR2_brm)
+plot(pollR2_brm$criteria$loo, "k")
+plot(conditional_smooths(pollR2_brm), ask = FALSE)
+y <- trend$trend
+yrep_pollR2_brm  <- fitted(pollR2_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_pollR2_brm[sample(nrow(yrep_pollR2_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("pollR2_brm")
+pdf("./figs/trace_pollR2_brm.pdf", width = 6, height = 4)
+trace_plot(pollR2_brm$fit)
+dev.off()
+
+## plot predicted values pollR2_brm ---------------------------------------
+## 95% CI
+ce1s_1 <- conditional_effects(pollR2_brm, effect = "dfa_trend", re_formula = NA,
+                              probs = c(0.025, 0.975))
+## 90% CI
+ce1s_2 <- conditional_effects(pollR2_brm, effect = "dfa_trend", re_formula = NA,
+                              probs = c(0.05, 0.95))
+## 80% CI
+ce1s_3 <- conditional_effects(pollR2_brm, effect = "dfa_trend", re_formula = NA,
+                              probs = c(0.1, 0.9))
+dat_ce <- ce1s_1$dfa_trend
+dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
+dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
+dat_ce[["upper_90"]] <- ce1s_2$dfa_trend[["upper__"]]
+dat_ce[["lower_90"]] <- ce1s_2$dfa_trend[["lower__"]]
+dat_ce[["upper_80"]] <- ce1s_3$dfa_trend[["upper__"]]
+dat_ce[["lower_80"]] <- ce1s_3$dfa_trend[["lower__"]]
+dat_ce[["rug.anom"]] <- c(jitter(unique(dat$dfa_trend), amount = 0.01),
+                          rep(NA, 100-length(unique(dat$dfa_trend))))
+
+g <- ggplot(dat_ce) +
+  aes(x = effect1__, y = estimate__) +
+  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
+  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
+  geom_line(size = 1, color = "red3") +
+  labs(x = "DFA trend", y = "ln(model recruitment)") +
+  theme_bw()+
+  geom_rug(aes(x=rug.anom, y=NULL))
+print(g)
+
+ggsave("./figs/pollR2_brm_dfa.png", width=3, height=2, units = 'in')
+
+
+## and far
+## plot predicted values ---------------------------------------
+## 95% CI
+ce1s_1 <- conditional_effects(pollR2_brm, effect = "far", re_formula = NA,
+                              probs = c(0.025, 0.975))
+## 90% CI
+ce1s_2 <- conditional_effects(pollR2_brm, effect = "far", re_formula = NA,
+                              probs = c(0.05, 0.95))
+## 80% CI
+ce1s_3 <- conditional_effects(pollR2_brm, effect = "far", re_formula = NA,
+                              probs = c(0.1, 0.9))
+dat_ce <- ce1s_1$far
+dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
+dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
+dat_ce[["upper_90"]] <- ce1s_2$far[["upper__"]]
+dat_ce[["lower_90"]] <- ce1s_2$far[["lower__"]]
+dat_ce[["upper_80"]] <- ce1s_3$far[["upper__"]]
+dat_ce[["lower_80"]] <- ce1s_3$far[["lower__"]]
+dat_ce[["rug.anom"]] <- c(jitter(unique(dat$far), amount = 0.01),
+                          rep(NA, 100-length(unique(dat$far))))
+
+g <- ggplot(dat_ce) +
+  aes(x = effect1__, y = estimate__) +
+  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
+  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
+  geom_line(size = 1, color = "red3") +
+  labs(x = "FAR", y = "ln(model recruitment)") +
+  theme_bw()+
+  geom_rug(aes(x=rug.anom, y=NULL))
+print(g)
+
+ggsave("./figs/pollR2_brm_far.png", width=3, height=2, units = 'in')
+
 
 ## Bayes DFA - not very successful! -----------------------------
 dfa.dat <- as.matrix(t(scaled.dat[,2:5]))
