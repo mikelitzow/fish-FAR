@@ -96,12 +96,14 @@ plot <- ce1s_1$far_fac %>%
 
 plot$far_fac <- reorder(plot$far_fac, desc(plot$far_fac))
 
-ggplot(plot, aes(far_fac, estimate__)) +
+fig.2b <- ggplot(plot, aes(far_fac, estimate__)) +
   geom_point(size=3) +
   geom_errorbar(aes(ymin=lower__, ymax=upper__), width=0.3, size=0.5) +
-  ylab("CPUE (fish / set)") +
+  ylab("Fish / set") +
   xlab("FAR") +
   scale_x_discrete(labels=c(expression(""<=0.9), expression("">=0.98))) +
+  scale_y_continuous(breaks=c(1,5,10,50,100,150)) +
+  coord_trans(y = "pseudo_log") + 
   theme_bw()
 
 
