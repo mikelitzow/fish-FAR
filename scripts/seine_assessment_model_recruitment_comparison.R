@@ -1,7 +1,7 @@
 ## Model up seine recruitment estimates for each year
 ## and compare with stock assessment model esimated recruitment
 
-library(ggplot2)
+library(tidyverse)
 library(plyr)
 library(mgcv)
 library(rstan)
@@ -186,17 +186,285 @@ print(ce1s_1)
 ggsave("./figs/annual_recruitment_estimates_recr_2_zinb.png", width = 7, height = 4)
 
 # load assessment time series
-recr <- read.csv("data/stock_assessment_recruitment.csv", row.names = 1)
+recr <- read.csv("data/cod_pollock_assessment_2020_SAFEs.csv", row.names = 1)
 
-plot <- data.frame(year=2006:2017,
-                   ln_assessment_model_R=log(recr$recruits[row.names(recr) %in% 2006:2017]),
-                   ln_seine_cpue=log(ce1s_1$year_fac$estimate[1:length(2006:2017)]))
+# limiting to 2016 and earlier 
+plot <- data.frame(year=2006:2016,
+                   ln_assessment_model_R=log(recr$codR0.2020[row.names(recr) %in% 2006:2016]),
+                   ln_seine_cpue=log(ce1s_1$year_fac$estimate[1:length(2006:2016)]))
 
-cor(plot) # r = 0.678
+cor(plot) # r = 0.86
 
 ggplot(plot, aes(ln_seine_cpue, ln_assessment_model_R)) +
-  geom_text(label=year) +
-  ggtitle("2006-2017") +
+  geom_text(aes(label=year)) +
+  ggtitle("2006-2016") +
   theme_bw()
 
 ggsave("./figs/seine_assessment_model_recruitment_comparison.png", width = 5, height = 4)
+
+## fit a brms model ------------------------------------------
+
+# first, clean up data
+dat <- plot
+
+names(dat)[2:3] <- c("model", "seine")
+
+# and add ssb
+ssb <- read.csv("./data/cod_pollock_assessment_2020_SAFEs.csv")
+
+ssb <- ssb %>%
+  select(year, codSSB.2020)
+
+names(ssb)[2] <- "ssb"
+
+dat <- left_join(dat, ssb)
+
+## brms: setup ---------------------------------------------
+
+## Define model formulas
+## Limiting knots to 3 to prevent overfitting
+
+codR1_formula <-  bf(model ~ s(ssb, k = 3) + s(seine, k = 3))
+
+codR2_formula <-  bf(model ~ s(seine, k = 3))
+
+
+## fit --------------------------------------
+codR1_brm <- brm(codR1_formula,
+                    data = dat,
+                    cores = 4, chains = 4, iter = 3000,
+                    save_pars = save_pars(all = TRUE),
+                    control = list(adapt_delta = 0.99, max_treedepth = 10))
+codR1_brm  <- add_criterion(codR1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(codR1_brm, file = "output/codR1_brm.rds")
+
+codR1_brm <- readRDS("./output/codR1_brm.rds")
+check_hmc_diagnostics(codR1_brm$fit)
+neff_lowest(codR1_brm$fit)
+rhat_highest(codR1_brm$fit)
+summary(codR1_brm)
+bayes_R2(codR1_brm)
+plot(codR1_brm$criteria$loo, "k")
+plot(conditional_smooths(codR1_brm), ask = FALSE)
+y <- trend$trend
+yrep_codR1_brm  <- fitted(codR1_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_codR1_brm[sample(nrow(yrep_codR1_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("codR1_brm")
+pdf("./figs/trace_codR1_brm.pdf", width = 6, height = 4)
+trace_plot(codR1_brm$fit)
+dev.off()
+
+
+codR2_brm <- brm(codR2_formula,
+                     data = dat,
+                     cores = 4, chains = 4, iter = 3000,
+                     save_pars = save_pars(all = TRUE),
+                     control = list(adapt_delta = 0.999, max_treedepth = 10))
+codR2_brm  <- add_criterion(codR2_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(codR2_brm, file = "output/codR2_brm.rds")
+
+codR2_brm <- readRDS("./output/codR2_brm.rds")
+check_hmc_diagnostics(codR2_brm$fit)
+neff_lowest(codR2_brm$fit)
+rhat_highest(codR2_brm$fit)
+summary(codR2_brm)
+bayes_R2(codR2_brm)
+plot(codR2_brm$criteria$loo, "k")
+plot(conditional_smooths(codR2_brm), ask = FALSE)
+y <- trend$trend
+yrep_codR2_brm  <- fitted(codR2_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_codR2_brm[sample(nrow(yrep_codR2_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("codR2_brm")
+pdf("./figs/trace_codR2_brm.pdf", width = 6, height = 4)
+trace_plot(codR2_brm$fit)
+dev.off()
+
+
+## Model selection -----------------------------------------
+codR1_brm  <- readRDS("./output/codR1_brm.rds")
+codR2_brm  <- readRDS("./output/codR2_brm.rds")
+
+loo(codR1_brm, codR2_brm)
+
+## second round of model-fitting adding seine:FAR interaction
+
+# load FAR estimates
+obs_far_fixef <- readRDS("./output/obs_far_fixef.rds")
+
+ce1s_1 <- conditional_effects(obs_far_fixef, probs = c(0.025, 0.975))
+obs <- ce1s_1$year_fac %>%
+  select(year_fac, estimate__)
+
+obs$year <- as.numeric(as.character(obs$year_fac))
+
+dat <- left_join(dat, obs)
+names(dat)[6] <- "far"
+
+## Define model formulas
+
+codR3_formula <-  bf(model ~ s(seine, k = 3) + s(far, k=3))
+
+codR4_formula <-  bf(model ~ s(seine, k = 3) + seine:far)
+
+
+## fit --------------------------------------
+codR3_brm <- brm(codR3_formula,
+                 data = dat,
+                 cores = 4, chains = 4, iter = 3000,
+                 save_pars = save_pars(all = TRUE),
+                 control = list(adapt_delta = 0.99, max_treedepth = 10))
+codR3_brm  <- add_criterion(codR3_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(codR3_brm, file = "output/codR3_brm.rds")
+
+codR3_brm <- readRDS("./output/codR3_brm.rds")
+check_hmc_diagnostics(codR3_brm$fit)
+neff_lowest(codR3_brm$fit)
+rhat_highest(codR3_brm$fit)
+summary(codR3_brm)
+bayes_R2(codR3_brm)
+plot(codR3_brm$criteria$loo, "k")
+plot(conditional_smooths(codR3_brm), ask = FALSE)
+y <- trend$trend
+yrep_codR3_brm  <- fitted(codR3_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_codR3_brm[sample(nrow(yrep_codR3_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("codR3_brm")
+pdf("./figs/trace_codR3_brm.pdf", width = 6, height = 4)
+trace_plot(codR3_brm$fit)
+dev.off()
+
+
+codR4_brm <- brm(codR4_formula,
+                 data = dat,
+                 cores = 4, chains = 4, iter = 3000,
+                 save_pars = save_pars(all = TRUE),
+                 control = list(adapt_delta = 0.999, max_treedepth = 10))
+codR4_brm  <- add_criterion(codR4_brm, c("loo", "bayes_R4"), moment_match = TRUE)
+saveRDS(codR4_brm, file = "output/codR4_brm.rds")
+
+codR4_brm <- readRDS("./output/codR4_brm.rds")
+check_hmc_diagnostics(codR4_brm$fit)
+neff_lowest(codR4_brm$fit)
+rhat_highest(codR4_brm$fit)
+summary(codR4_brm)
+bayes_R4(codR4_brm)
+plot(codR4_brm$criteria$loo, "k")
+plot(conditional_smooths(codR4_brm), ask = FALSE)
+y <- trend$trend
+yrep_codR4_brm  <- fitted(codR4_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_codR4_brm[sample(nrow(yrep_codR4_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("codR4_brm")
+pdf("./figs/trace_codR4_brm.pdf", width = 6, height = 4)
+trace_plot(codR4_brm$fit)
+dev.off()
+
+## model selection --------------------------------------
+codR2_brm  <- readRDS("./output/codR2_brm.rds")
+codR3_brm  <- readRDS("./output/codR3_brm.rds")
+codR4_brm  <- readRDS("./output/codR4_brm.rds")
+
+loo(codR2_brm, codR3_brm, codR4_brm)
+
+## plot predicted values codR2_brm ---------------------------------------
+## 95% CI
+ce1s_1 <- conditional_effects(codR2_brm, effect = "seine", re_formula = NA,
+                              probs = c(0.025, 0.975))
+## 90% CI
+ce1s_2 <- conditional_effects(codR2_brm, effect = "seine", re_formula = NA,
+                              probs = c(0.05, 0.95))
+## 80% CI
+ce1s_3 <- conditional_effects(codR2_brm, effect = "seine", re_formula = NA,
+                              probs = c(0.1, 0.9))
+dat_ce <- ce1s_1$seine
+dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
+dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
+dat_ce[["upper_90"]] <- ce1s_2$seine[["upper__"]]
+dat_ce[["lower_90"]] <- ce1s_2$seine[["lower__"]]
+dat_ce[["upper_80"]] <- ce1s_3$seine[["upper__"]]
+dat_ce[["lower_80"]] <- ce1s_3$seine[["lower__"]]
+
+g <- ggplot(dat_ce) +
+  aes(x = effect1__, y = estimate__) +
+  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
+  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
+  geom_line(size = 1, color = "red3") +
+  labs(x = "ln(seine)", y = "ln(model recruitment)") +
+  geom_text(data=dat, aes(seine, model, label = year), size=1.5) +
+  theme_bw()
+
+print(g)
+
+ggsave("./figs/codR2_brm_seine.png", width=3, height=2.5, units = 'in')
+
+
+## plot predicted values codR3_brm ---------------------------------------
+## 95% CI
+ce1s_1 <- conditional_effects(codR3_brm, effect = "seine", re_formula = NA,
+                              probs = c(0.025, 0.975))
+## 90% CI
+ce1s_2 <- conditional_effects(codR3_brm, effect = "seine", re_formula = NA,
+                              probs = c(0.05, 0.95))
+## 80% CI
+ce1s_3 <- conditional_effects(codR3_brm, effect = "seine", re_formula = NA,
+                              probs = c(0.1, 0.9))
+dat_ce <- ce1s_1$seine
+dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
+dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
+dat_ce[["upper_90"]] <- ce1s_2$seine[["upper__"]]
+dat_ce[["lower_90"]] <- ce1s_2$seine[["lower__"]]
+dat_ce[["upper_80"]] <- ce1s_3$seine[["upper__"]]
+dat_ce[["lower_80"]] <- ce1s_3$seine[["lower__"]]
+dat_ce[["rug.anom"]] <- c(jitter(unique(dat$seine), amount = 0.01),
+                          rep(NA, 100-length(unique(dat$seine))))
+
+g <- ggplot(dat_ce) +
+  aes(x = effect1__, y = estimate__) +
+  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
+  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
+  geom_line(size = 1, color = "red3") +
+  labs(x = "ln(seine)", y = "ln(model recruitment)") +
+  theme_bw()+
+  geom_rug(aes(x=rug.anom, y=NULL))
+print(g)
+
+ggsave("./figs/codR3_brm_seine.png", width=3, height=2, units = 'in')
+
+
+## and far
+## plot predicted values ---------------------------------------
+## 95% CI
+ce1s_1 <- conditional_effects(codR3_brm, effect = "far", re_formula = NA,
+                              probs = c(0.025, 0.975))
+## 90% CI
+ce1s_2 <- conditional_effects(codR3_brm, effect = "far", re_formula = NA,
+                              probs = c(0.05, 0.95))
+## 80% CI
+ce1s_3 <- conditional_effects(codR3_brm, effect = "far", re_formula = NA,
+                              probs = c(0.1, 0.9))
+dat_ce <- ce1s_1$far
+dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
+dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
+dat_ce[["upper_90"]] <- ce1s_2$far[["upper__"]]
+dat_ce[["lower_90"]] <- ce1s_2$far[["lower__"]]
+dat_ce[["upper_80"]] <- ce1s_3$far[["upper__"]]
+dat_ce[["lower_80"]] <- ce1s_3$far[["lower__"]]
+dat_ce[["rug.anom"]] <- c(jitter(unique(dat$far), amount = 0.01),
+                          rep(NA, 100-length(unique(dat$far))))
+
+g <- ggplot(dat_ce) +
+  aes(x = effect1__, y = estimate__) +
+  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
+  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
+  geom_line(size = 1, color = "red3") +
+  labs(x = "FAR", y = "ln(model recruitment)") +
+  theme_bw()+
+  geom_rug(aes(x=rug.anom, y=NULL))
+print(g)
+
+ggsave("./figs/codR3_brm_far.png", width=3, height=2, units = 'in')
