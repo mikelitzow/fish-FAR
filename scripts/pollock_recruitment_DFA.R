@@ -392,7 +392,7 @@ dev.off()
 dfa1_far_brm  <- readRDS("./output/dfa1_far_brm.rds")
 dfa2_far_brm  <- readRDS("./output/dfa_2_far_brm.rds")
 
-loo(dfa1_far_brm, dfa_2_far_brm)
+loo(dfa1_far_brm, dfa2_far_brm)
 
 ## plot predicted values ---------------------------------------
 ## 95% CI
@@ -412,9 +412,10 @@ dat_ce[["lower_90"]] <- ce1s_2$far[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$far[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$far[["lower__"]]
 dat_ce[["rug.anom"]] <- c(jitter(unique(trend$far), amount = 0.01),
-                          rep(NA, 100-length(unique(trend$far))))
+                         rep(NA, 100-length(unique(trend$far))))
 
-g <- ggplot(dat_ce) +
+
+fig.3a <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
   geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
@@ -422,11 +423,12 @@ g <- ggplot(dat_ce) +
   geom_line(size = 1, color = "red3") +
   labs(x = "Fraction of attributable risk", y = "DFA trend") +
   theme_bw()+
-  geom_rug(aes(x=rug.anom, y=NULL))
-print(g)
+ geom_rug(aes(x=rug.anom, y=NULL))
+print(fig.3a)
 
 ggsave("./figs/continuous_far_predicted_effect_dfa1_far_brm.png", width = 3, height = 2)
 
+ce1s_1$far
 ## aside - how well does the DFA trend predict model-estimated recruitment?---------------
 
 ## add modeled R
