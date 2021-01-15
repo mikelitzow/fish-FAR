@@ -225,16 +225,18 @@ dat_ce[["lower_80"]] <- ce1s_3$temp.anom[["lower__"]]
 dat_ce[["rug.anom"]] <- c(jitter(unique(cod.data$temp.anom), amount = 0.1),
                           rep(NA, 100-length(unique(cod.data$temp.anom))))
 
-g <- ggplot(dat_ce) +
+fig.2a <- ggplot(dat_ce) +
     aes(x = effect1__, y = estimate__) +
     geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
     geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
     geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
     geom_line(size = 1, color = "red3") +
-    labs(x = "Egg/larval temperature anomaly", y = "CPUE (fish / set)") +
+    labs(x = "Egg/larval temperature anomaly", y = "Fish / set") +
+    scale_y_continuous(breaks=c(0,1,5,10,50,100,200)) +
+    coord_trans(y = "pseudo_log") +
     theme_bw()+
     geom_rug(aes(x=rug.anom, y=NULL))
-print(g)
+print(fig.2a)
 
 ggsave("./figs/temp.anom_predicted_effect_cod2sg_zinb_k3.png", width = 3, height = 2)
 ## this is Fig. 2a in the draft
