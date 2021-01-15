@@ -119,13 +119,13 @@ plot(conditional_effects(R2), points = TRUE)
 ## Predicted effects ---------------------------------------
 
 ## 95% CI
-ce1s_1 <- conditional_effects(R2, effect = "FAR", re_formula = NA,
+ce1s_1 <- conditional_effects(R1, effect = "FAR", re_formula = NA,
                               probs = c(0.025, 0.975))
 ## 90% CI
-ce1s_2 <- conditional_effects(R2, effect = "FAR", re_formula = NA,
+ce1s_2 <- conditional_effects(R1, effect = "FAR", re_formula = NA,
                               probs = c(0.05, 0.95))
 ## 80% CI
-ce1s_3 <- conditional_effects(R2, effect = "FAR", re_formula = NA,
+ce1s_3 <- conditional_effects(R1, effect = "FAR", re_formula = NA,
                               probs = c(0.1, 0.9))
 dat_ce <- ce1s_1$FAR
 dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
@@ -140,7 +140,7 @@ cod.sub <- conditional_effects(R2, effect = "FAR")
 cod.sub <- lapply(cod.sub, attributes)$FAR$points
 cod.sub$year <- 1977:2020
 
-cod_R_FAR_plot <- ggplot(dat_ce) +
+fig.2c <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
   geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
@@ -148,12 +148,12 @@ cod_R_FAR_plot <- ggplot(dat_ce) +
   geom_line(size = 1, color = "red3") +
   geom_text(data = cod.sub,
             aes(x = FAR, y = resp__, label = year), color = "grey40", size = 3) +
-  labs(x = "Fraction of attributable risk", y = "Recruitment anomaly") +
+  labs(x = "Fraction of attributable risk", y = "Log recruitment anomaly") +
   theme_bw()
-print(cod_R_FAR_plot)
+print(fig.2c)
 
-ggsave("./figs/predicted_effect_cod_R_FAR_with_uncertainty.png", width = 4, height = 3)
-## this is Fig. 2c in the draft
+ggsave("./figs/fig.2c.png", width = 4, height = 3)
+
 
 # predict for CMIP projections!
 post <- data.frame()
