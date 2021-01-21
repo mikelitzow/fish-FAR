@@ -106,7 +106,7 @@ fig.2b <- ggplot(plot, aes(far_fac, estimate__)) +
   coord_trans(y = "pseudo_log") + 
   theme_bw()
 
-
+print(fig.2b)
 
 ggsave("figs/prelim_FAR_recruit_plot.png", width=1.5, height=2, units='in')
 ## this is Fig. 2b
