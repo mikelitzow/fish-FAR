@@ -10,6 +10,9 @@ ggarrange(ggarrange(fig.2a, fig.2b, ncol=2, widths = c(0.65, 0.35), labels = c("
           fig.2c, nrow=2, heights = c(0.4, 0.6), labels = c("a", "c", "c"))
 dev.off()
 
+png("./figs/fig_3.png", width=4, height=5.5, units='in', res=300)
+ggarrange(fig.3a, fig.3b, ncol=1, labels = c("a", "b"), align="v")
+dev.off()
 
 ## combine cod-pollock R plot, pollock seine vs. FAR and pollock model recruitment vs. FAR plots ------------
 
