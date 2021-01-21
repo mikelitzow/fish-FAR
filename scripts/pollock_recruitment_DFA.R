@@ -238,6 +238,8 @@ ggplot(trend, aes(year, trend)) +
   geom_ribbon(aes(ymin=ymin, ymax=ymax), fill="grey90") +
   geom_line(color="red") 
 
+write.csv(trend, "./output/poll_dfa_trend.csv")
+
 ggsave("./figs/reduced_pollock_DFA_trend.png", width=3, height=2, units = 'in')
 
 ## fit brms model - FAR as factor ------------------------------------
