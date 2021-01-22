@@ -1,7 +1,17 @@
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
 library(tidyverse)
+library(cowplot)
+library(ggpubr)
+library(brms)
+library(rgdal)
 
-cb <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 theme_set(theme_bw())
+
+# set palette
+cb <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 
 ## far panel ---------
@@ -32,9 +42,7 @@ pred.obs <- left_join(obs.95, obs.90)
 pred.obs <- left_join(pred.obs, obs.80)
 pred.obs$year <- as.numeric(as.character(pred.obs$year_fac))
 
-theme_set(theme_bw())
-
-far <- ggplot(filter(pred.obs, year >= 1969)) +
+far.fig <- ggplot(filter(pred.obs, year >= 1970)) +
   aes(x = year, y = estimate__) +
   geom_ribbon(aes(ymin = ymin.95, ymax = ymax.95), fill = "grey90") +
   geom_ribbon(aes(ymin = ymin.90, ymax = ymax.90), fill = "grey85") +
@@ -44,7 +52,7 @@ far <- ggplot(filter(pred.obs, year >= 1969)) +
   ylab("FAR") +
   scale_x_continuous(breaks=seq(1960, 2020, 10)) 
 
-print(far)
+print(far.fig)
 
 
 
@@ -185,15 +193,124 @@ r.fig <- ggplot(plot.r, aes(year, est/1e+06, color=sp, fill=sp)) +
 
 r.fig
 
+## study site -----------------------------------------------
+
+# load data sets
+bays <- read.csv("./data/bay_lat_long.csv", row.names = 1)
+
+# remove Cooks (repeat) and Kujulik (not resampled)
+drop <- bays$Bay %in% c("Cooks", "Kujulik")
+bays <- bays[!drop,]
+bays$years <- ifelse(bays$Bay %in% c("Anton Larson Bay", "Cook Bay"), "2006-2020", "2018-2020")
 
 
+# ak <- ne_countries(scale = "large", returnclass = "sf", continent="north america")
+
+# use this version unless the high-res version is entered!
+ak <- ne_countries(scale = "medium", returnclass = "sf", continent="north america")
+world <- ne_countries(scale='medium', returnclass = "sf")
+
+# add FOCI
 shp.mp <-readOGR(dsn="~/Projects/GOA ichthyoplankton time series/NewLateLarvalPolygon",layer="Survey_poly")
 shp.mp.LL<-spTransform(shp.mp,CRS("+proj=longlat"))
+
+library(maps)
+library(mapdata)
+library(maptools)
+library(mapproj)
 
 map('worldHires',xlim=c(-170,-140),ylim=c(52,62),fill=T,col="gray",border=F)
 map(shp.mp.LL,add=T,col="blue",lwd=2)
 map.axes()
 
-### Late summer age-0 trawl POLYGON: doesn't look quite as tidy, but this is what I use to extract the trawl stations for the "core" area from our late summer survey. 
-### I've also included a pdf showing the last 4 years of pollock catches. But in the 2000s, stations were restricted mostly to the "core" area, hence our subsetting for the timeseries.
-polygon(c(-159.7,-158.3,-155,-156.3),c(55.9,54.7,56.1,57.2))
+## ggplot version!
+
+## need to change Spatial Polygon to dataframe
+# add to data a new column termed "id" composed of the rownames of data
+shp.mp.LL@data$id <- rownames(shp.mp.LL@polygons)
+
+# create a data.frame from our spatial object
+poly.points <- fortify(shp.mp.LL, region = "id")
+
+# merge the "fortified" data with the data from our spatial object
+ichthyo <- merge(poly.points, shp.mp.LL@data, by = "id")
+
+# combine with age-0 trawl polygon
+trawl <- data.frame(long = c(-159.7,-158.3,-155,-156.3,-159.7),
+                    lat = c(55.9,54.7,56.1,57.2,55.9),
+                    type = "Juvenile trawl")
+
+ichthyo <- ichthyo %>%
+  select(long, lat) %>%
+  mutate(type = "Larval survey")
+
+polys <- rbind(ichthyo, trawl)
+polys$type <- reorder(polys$type, desc(polys$type))
+
+bays$type <- "Beach seine"
+
+
+box <- data.frame(long = c(-163, -163, -151, -151, -163), lat = c(54.5, 58.5, 58.5, 54.5, 54.5))
+
+inset <- ggplot(data = world) +
+  geom_sf(fill="dark grey", color=NA) +
+  coord_sf(xlim = c(-179, -70), ylim = c(0, 70)) +
+  geom_path(data=box, aes(long, lat), color=cb[8], size=1) +
+  theme_classic() +
+  theme(axis.line = element_line(color="black"),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(color="black", fill="transparent"),
+        panel.spacing = unit(1, 'mm'))
+
+inset  
+  
+
+
+xlim <- c(-2400000, 1600000)
+ylim <- c(100000, 2500000)
+
+
+alaska <- ggplot(data = world) +
+    geom_sf(fill = "dark grey", color = NA) +
+    coord_sf(crs = st_crs(3467), xlim = xlim, ylim = ylim, expand = FALSE, datum = NA)
+alaska
+
+
+
+map.plot <- ggplot(ak) +  
+  geom_path(data=polys, aes(long, lat, color=type), lwd=1.5) +
+  geom_sf(fill="darkgoldenrod3", color=NA) + 
+  coord_sf(xlim = c(-163, -151), ylim = c(54.5, 58.5), expand = FALSE) +
+  geom_point(data = bays, aes(-lon, lat, fill=type), size=3, shape=21) +
+  theme(axis.title = element_blank(),
+        legend.position = c(0.85, 0.2),
+        legend.text = element_text(size=8),
+        legend.title = element_blank(),
+        legend.margin = margin(-2,0,0,0,unit='mm'),
+        legend.background = element_rect(fill = 'transparent', linetype=0),
+        legend.spacing.y = unit(1, 'mm')) +
+  scale_fill_manual(values=cb[4]) +
+  scale_color_manual(values=cb[c(6,7)]) +
+  scale_x_continuous(breaks = c(-160, -156, -152)) +
+  scale_y_continuous(breaks = c(55, 56, 57, 58))
+
+map.plot
+
+full.map <- map.plot +
+  annotation_custom(
+    grob = ggplotGrob(inset),
+    xmin = -163,
+    xmax = -159,
+    ymin = 56,
+    ymax = 59
+  ) 
+
+full.map
+
+png("./figs/Fig1.png", width = 4, height = 7, units = 'in', res = 300)
+ggpubr::ggarrange(far.fig, ssb.fig, full.map, 
+                  ncol=1, 
+                  labels = c("a", "b", "c"))
+dev.off()
