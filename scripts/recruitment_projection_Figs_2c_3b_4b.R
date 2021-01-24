@@ -1,6 +1,6 @@
 ## predict the response of cod and pollock recruitment to FAR values
 ## in the observational record and for CMIP projections
-## currently used in Fig. 4b, and will become the new Figs. 2c, 3c
+## currently used in Fig. 4b, and will become the new Figs. 2c, 3b
 
 library(rstan)
 library(brms)
@@ -225,50 +225,12 @@ ggsave("./figs/hist-projected_cod_R_with_FAR_uncertainty.png", width = 3, height
 # stock assessment model estimates
 recr <- read.csv("./data/cod_pollock_assessment_2020_SAFEs.csv")
 
-# need to estimate pre-1977 recruitment,
-# which was provided in the 2019 report but not in 2020
-mod <- lm(pollR0.2020 ~ pollR0.2019, data=recr)
-summary(mod)
-pred.R0 <- predict(mod, newdata = recr[recr$year < 1977,])
-recr$pollR0.2020[recr$year < 1977] <- pred.R0
-
-# same thing for SSB
-mod <- lm(poll.SSB.2020 ~ poll.SSB.2019, data=recr)
-summary(mod)
-pred.SSB <- predict(mod, newdata = recr[recr$year < 1977,])
-recr$poll.SSB.2020[recr$year < 1977] <- pred.SSB
-
-# 2020 recruitment estimate is poorly supported by data; discard
-# note that this differs from cod model! better support for recent year classes in pollock
-# from the acoustic survey
-
 obs.dat <- recr %>%
   filter(year %in% 1970:2019) %>%
   select(year, pollR0.2020, poll.SSB.2020) %>%
   mutate(sc.log.pollR0=as.vector(scale(log(pollR0.2020))))
 
-# below outmoded!
-# # add 2020 as NA
-# xtra <- data.frame(year=2020,
-#                    pollR0.2020=NA,
-#                    sc.log.pollR0=NA)
-# 
-# recr <- rbind(recr, xtra)
-# 
-# # annual recruitment estimates from dfa 
-# dfa  <- read.csv("./output/poll_dfa_trend.csv", row.names = 1)
-# 
-# obs.dat <- left_join(recr, dfa)
-# 
-# # then predict 2020 recruitment from dfa trend values
-# 
-# mod <- lm(sc.log.pollR0 ~ trend, data=obs.dat, na.action = "na.omit")
-# summary(mod)
-# 
-# new.dat <- data.frame(trend = obs.dat$trend[obs.dat$year == 2020])
-# obs.dat$sc.log.pollR0[obs.dat$year == 2020] <- predict(mod, newdata =  new.dat)
-# 
-# add FAR estimates for 1977:2020 - load brms object
+
 obs_far_fixef <- readRDS("./output/obs_far_fixef.rds")
 
 obs.FAR <- conditional_effects(obs_far_fixef, probs = c(0.025, 0.975))
