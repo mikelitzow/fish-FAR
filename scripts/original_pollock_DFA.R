@@ -76,12 +76,12 @@ priors_zinb <- c(set_prior("normal(0, 3)", class = "b"),
                  set_prior("student_t(3, 0, 3)", class = "sds", dpar = "zi"))
 
 poll_recr_2_zinb_reduced_bays <- brm(recr_2_formula,
-                        data = poll.data,
-                        prior = priors_zinb,
-                        family = zinb,
-                        cores = 4, chains = 4, iter = 6000,
-                        save_pars = save_pars(all = TRUE),
-                        control = list(adapt_delta = 0.99, max_treedepth = 10))
+                                     data = poll.data,
+                                     prior = priors_zinb,
+                                     family = zinb,
+                                     cores = 4, chains = 4, iter = 6000,
+                                     save_pars = save_pars(all = TRUE),
+                                     control = list(adapt_delta = 0.99, max_treedepth = 10))
 poll_recr_2_zinb_reduced_bays  <- add_criterion(poll_recr_2_zinb_reduced_bays, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(poll_recr_2_zinb_reduced_bays, file = "output/poll_recr_2_zinb_reduced_bays.rds")
 
@@ -339,10 +339,10 @@ dfa2_far_formula <-  bf(trend ~ s(far, k = 3))
 
 ## fit --------------------------------------
 dfa1_far_brm <- brm(dfa1_far_formula,
-                data = trend,
-                cores = 4, chains = 4, iter = 3000,
-                save_pars = save_pars(all = TRUE),
-                control = list(adapt_delta = 0.99, max_treedepth = 10))
+                    data = trend,
+                    cores = 4, chains = 4, iter = 3000,
+                    save_pars = save_pars(all = TRUE),
+                    control = list(adapt_delta = 0.99, max_treedepth = 10))
 dfa1_far_brm  <- add_criterion(dfa1_far_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(dfa1_far_brm, file = "output/dfa1_far_brm.rds")
 
@@ -365,10 +365,10 @@ dev.off()
 
 
 dfa_2_far_brm <- brm(dfa2_far_formula,
-                data = trend,
-                cores = 4, chains = 4, iter = 3000,
-                save_pars = save_pars(all = TRUE),
-                control = list(adapt_delta = 0.99, max_treedepth = 10))
+                     data = trend,
+                     cores = 4, chains = 4, iter = 3000,
+                     save_pars = save_pars(all = TRUE),
+                     control = list(adapt_delta = 0.99, max_treedepth = 10))
 dfa_2_far_brm  <- add_criterion(dfa_2_far_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(dfa_2_far_brm, file = "output/dfa_2_far_brm.rds")
 
@@ -414,7 +414,7 @@ dat_ce[["lower_90"]] <- ce1s_2$far[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$far[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$far[["lower__"]]
 dat_ce[["rug.anom"]] <- c(jitter(unique(trend$far), amount = 0.01),
-                         rep(NA, 100-length(unique(trend$far))))
+                          rep(NA, 100-length(unique(trend$far))))
 
 
 fig.3a <- ggplot(dat_ce) +
@@ -425,7 +425,7 @@ fig.3a <- ggplot(dat_ce) +
   geom_line(size = 1, color = "red3") +
   labs(x = "Fraction of attributable risk", y = "DFA trend") +
   theme_bw()+
- geom_rug(aes(x=rug.anom, y=NULL))
+  geom_rug(aes(x=rug.anom, y=NULL))
 print(fig.3a)
 
 ggsave("./figs/continuous_far_predicted_effect_dfa1_far_brm.png", width = 3, height = 2)
@@ -448,10 +448,10 @@ trend <- left_join(trend, r)
 dfa1_far_formula <-  bf(trend ~ s(ssb, k = 3) + s(far, k = 3))
 
 dfa_model_R_brm <- brm(bf(log(R0) ~ trend),
-                    data = trend,
-                    cores = 4, chains = 4, iter = 3000,
-                    save_pars = save_pars(all = TRUE),
-                    control = list(adapt_delta = 0.99, max_treedepth = 10))
+                       data = trend,
+                       cores = 4, chains = 4, iter = 3000,
+                       save_pars = save_pars(all = TRUE),
+                       control = list(adapt_delta = 0.99, max_treedepth = 10))
 saveRDS(dfa_model_R_brm, file = "output/dfa_model_R_brm.rds")
 
 check_hmc_diagnostics(dfa_model_R_brm$fit)
@@ -551,10 +551,10 @@ dfa2_formula <-  bf(trend ~ s(mean.anom, k = 3))
 
 ## fit --------------------------------------
 dfa1_brm <- brm(dfa1_formula,
-                    data = trend,
-                    cores = 4, chains = 4, iter = 3000,
-                    save_pars = save_pars(all = TRUE),
-                    control = list(adapt_delta = 0.99, max_treedepth = 10))
+                data = trend,
+                cores = 4, chains = 4, iter = 3000,
+                save_pars = save_pars(all = TRUE),
+                control = list(adapt_delta = 0.99, max_treedepth = 10))
 dfa1_brm  <- add_criterion(dfa1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(dfa1_brm, file = "output/dfa1_brm.rds")
 
@@ -641,10 +641,10 @@ pollR1_formula <-  bf(model ~ s(dfa_trend, k = 3))
 
 ## fit --------------------------------------
 pollR1_brm <- brm(pollR1_formula,
-                 data = dat,
-                 cores = 4, chains = 4, iter = 3000,
-                 save_pars = save_pars(all = TRUE),
-                 control = list(adapt_delta = 0.99, max_treedepth = 10))
+                  data = dat,
+                  cores = 4, chains = 4, iter = 3000,
+                  save_pars = save_pars(all = TRUE),
+                  control = list(adapt_delta = 0.99, max_treedepth = 10))
 pollR1_brm  <- add_criterion(pollR1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(pollR1_brm, file = "output/pollR1_brm.rds")
 
@@ -719,10 +719,10 @@ pollR2_formula <-  bf(model ~ s(dfa_trend, k = 3) + s(far, k=3))
 
 ## fit --------------------------------------
 pollR2_brm <- brm(pollR2_formula,
-                 data = dat,
-                 cores = 4, chains = 4, iter = 3000,
-                 save_pars = save_pars(all = TRUE),
-                 control = list(adapt_delta = 0.99, max_treedepth = 10))
+                  data = dat,
+                  cores = 4, chains = 4, iter = 3000,
+                  save_pars = save_pars(all = TRUE),
+                  control = list(adapt_delta = 0.99, max_treedepth = 10))
 pollR2_brm  <- add_criterion(pollR2_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(pollR2_brm, file = "output/pollR2_brm.rds")
 
