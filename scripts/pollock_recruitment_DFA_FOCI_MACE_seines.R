@@ -205,7 +205,7 @@ cntl.list = list(minit=200, maxit=20000, allow.degen=FALSE, conv.test.slope.tol=
 for(R in levels.R) {
   for(m in 1) {  # allowing up to 1 trends
     dfa.model = list(A="zero", R=R, m=m)
-    kemz = MARSS(dfa.dat[,colnames(dfa.dat) %in% 1988:2020], model=dfa.model,
+    kemz = MARSS(dfa.dat, model=dfa.model,
                  form="dfa", z.score=TRUE, control=cntl.list)
     model.data = rbind(model.data,
                        data.frame(R=R,
@@ -228,7 +228,7 @@ model.data
 # changing convergence criterion to ensure convergence
 cntl.list = list(minit=200, maxit=20000, allow.degen=FALSE, conv.test.slope.tol=0.1, abstol=0.0001)
 model.list = list(A="zero", m=1, R="diagonal and equal")
-dfa.mod = MARSS(dfa.dat[,colnames(dfa.dat) %in% 1988:2020], model=model.list, z.score=TRUE, form="dfa")
+dfa.mod = MARSS(dfa.dat, model=model.list, z.score=TRUE, form="dfa")
 
 # get CI and plot loadings...
 modCI <- MARSSparamCIs(dfa.mod)
@@ -246,7 +246,7 @@ load.plot <- ggplot(loadings, aes(names, loading)) +
   geom_bar(stat="identity", fill="light grey") +
   geom_errorbar(aes(ymin=lowCI, ymax=upCI), width=0.2) +
   theme(axis.title.x = element_blank(),
-        axis.text.x = element_text(angle=45, vjust=0.5)) +
+        axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
   labs(y = "DFA loading")
 
 load.plot
@@ -255,7 +255,7 @@ ggsave("./figs/full_pollock_DFA_loadings.png", width=2, height=2, units = 'in')
 
 
 # plot trend
-trend <- data.frame(year = 1988:2020,
+trend <- data.frame(year = 1981:2020,
                     trend = as.vector(dfa.mod$states),
                     ymin = as.vector(dfa.mod$states-1.96*dfa.mod$states.se),
                     ymax = as.vector(dfa.mod$states+1.96*dfa.mod$states.se))
@@ -264,6 +264,7 @@ trend.plot<- ggplot(trend, aes(year, trend)) +
   geom_ribbon(aes(ymin=ymin, ymax=ymax), fill="grey90") +
   geom_hline(yintercept = 0) +
   geom_line(color="red") +
+  geom_point(color="red") +
   labs(y = "DFA trend") + 
   theme(axis.title.x = element_blank())
 
@@ -440,13 +441,13 @@ loo(dfa1_far_brm, dfa2_far_brm)
 
 ## plot predicted values ---------------------------------------
 ## 95% CI
-ce1s_1 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
+ce1s_1 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.025, 0.975))
 ## 90% CI
-ce1s_2 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
+ce1s_2 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.05, 0.95))
 ## 80% CI
-ce1s_3 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
+ce1s_3 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.1, 0.9))
 dat_ce <- ce1s_1$far
 dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
@@ -467,8 +468,85 @@ fig.3a <- ggplot(dat_ce) +
   geom_line(size = 1, color = "red3") +
   labs(x = "Fraction of attributable risk", y = "DFA trend") +
   theme_bw()+
- geom_rug(aes(x=rug.anom, y=NULL))
+  geom_text(data = trend,
+            aes(x = far, y = trend, label = year), color = "grey40", size = 3) 
 print(fig.3a)
 
 ggsave("./figs/continuous_far_predicted_effect_dfa1_far_brm.png", width = 3, height = 2)
 
+## temp anom -------------------------------
+temp <- read.csv("./data/pollock godas anomalies.csv")
+
+temp <- temp %>%
+  select(year, mean.anom)
+
+trend <- left_join(trend, temp)
+
+## brms: setup ---------------------------------------------
+
+## Define model formulas
+## Limiting knots to 3 to prevent overfitting
+
+dfa_temp1_formula <-  bf(trend ~ s(ssb, k = 3) + s(mean.anom, k = 3))
+
+dfa_temp2_formula <-  bf(trend ~ s(mean.anom, k = 3))
+
+
+## fit --------------------------------------
+dfa_temp1_brm <- brm(dfa_temp1_formula,
+                data = trend,
+                cores = 4, chains = 4, iter = 3000,
+                save_pars = save_pars(all = TRUE),
+                control = list(adapt_delta = 0.99, max_treedepth = 10))
+dfa_temp1_brm  <- add_criterion(dfa_temp1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(dfa_temp1_brm, file = "output/dfa_temp1_brm.rds")
+
+dfa_temp1_brm <- readRDS("./output/dfa_temp1_brm.rds")
+check_hmc_diagnostics(dfa_temp1_brm$fit)
+neff_lowest(dfa_temp1_brm$fit)
+rhat_highest(dfa_temp1_brm$fit)
+summary(dfa_temp1_brm)
+bayes_R2(dfa_temp1_brm)
+plot(dfa_temp1_brm$criteria$loo, "k")
+plot(conditional_smooths(dfa_temp1_brm), ask = FALSE)
+y <- trend$trend
+yrep_dfa_temp1_brm  <- fitted(dfa_temp1_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_dfa_temp1_brm[sample(nrow(yrep_dfa_temp1_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("dfa_temp1_brm")
+pdf("./figs/trace_dfa_temp1_brm.pdf", width = 6, height = 4)
+trace_plot(dfa_temp1_brm$fit)
+dev.off()
+
+
+dfa_temp2_brm <- brm(dfa_temp2_formula,
+                data = trend,
+                cores = 4, chains = 4, iter = 3000,
+                save_pars = save_pars(all = TRUE),
+                control = list(adapt_delta = 0.99, max_treedepth = 10))
+dfa_temp2_brm  <- add_criterion(dfa_temp2_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(dfa_temp2_brm, file = "output/dfa_temp2_brm.rds")
+
+dfa_temp2_brm <- readRDS("./output/dfa_temp2_brm.rds")
+check_hmc_diagnostics(dfa_temp2_brm$fit)
+neff_lowest(dfa_temp2_brm$fit)
+rhat_highest(dfa_temp2_brm$fit)
+summary(dfa_temp2_brm)
+bayes_R2(dfa_temp2_brm)
+plot(dfa_temp2_brm$criteria$loo, "k")
+plot(conditional_smooths(dfa_temp2_brm), ask = FALSE)
+y <- trend$trend
+yrep_dfa_temp2_brm  <- fitted(dfa_temp2_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_dfa_temp2_brm[sample(nrow(yrep_dfa_temp2_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("dfa_temp2_brm")
+pdf("./figs/trace_dfa_temp2_brm.pdf", width = 6, height = 4)
+trace_plot(dfa_temp2_brm$fit)
+dev.off()
+
+
+## Model selection -----------------------------------------
+dfa_temp1_brm  <- readRDS("./output/dfa_temp1_brm.rds")
+dfa_temp2_brm  <- readRDS("./output/dfa_temp2_brm.rds")
+
+loo(dfa_temp1_brm, dfa_temp2_brm)
