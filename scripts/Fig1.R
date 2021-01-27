@@ -55,29 +55,6 @@ far.fig <- ggplot(filter(pred.obs, year >= 1970)) +
 print(far.fig)
 
 
-
-# and combine!
-d1 <- d1 %>%
-  select(year, mean.anom)
-names(d1)[2] <- "Pollock"
-
-d2 <- d2 %>%
-  select(year, mean.anom)
-names(d2)[2] <- "Cod"
-
-dat <- left_join(d1, d2)
-
-dat <- left_join(obs, dat)
-
-dat <- dat %>%
-  pivot_longer(cols = c(-year, -UCI, -LCI))
-
-dat$panel = if_else(dat$name == "FAR", "Fraction of attributable risk", "Temperature anomaly (SD)")
-
-ggplot(filter(dat, panel=="Temperature anomaly (SD)"), aes(year, value, color=name)) +
-  geom_line() 
-
-
 ## model SSB and R estimates --------------------------------------------------------------------
 
 mod.dat <- read.csv("./data/cod_pollock_assessment_2020_SAFEs.csv")
