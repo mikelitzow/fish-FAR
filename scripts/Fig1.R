@@ -234,7 +234,6 @@ inset <- ggplot(data = world) +
 inset  
 
 
-
 map.plot <- ggplot(ak) +  
   geom_path(data=polys, aes(long, lat, color=type), lwd=1.5) +
   geom_sf(fill="darkgoldenrod3", color=NA) + 
