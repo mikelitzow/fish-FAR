@@ -181,30 +181,20 @@ bays <- bays[!drop,]
 bays$years <- ifelse(bays$Bay %in% c("Anton Larson Bay", "Cook Bay"), "2006-2020", "2018-2020")
 
 
-# ak <- ne_countries(scale = "large", returnclass = "sf", continent="north america")
+ak <- ne_countries(scale = "large", returnclass = "sf", continent="north america")
 
 # use this version unless the high-res version is entered!
-ak <- ne_countries(scale = "medium", returnclass = "sf", continent="north america")
+# ak <- ne_countries(scale = "medium", returnclass = "sf", continent="north america")
 world <- ne_countries(scale='medium', returnclass = "sf")
 
 # add FOCI
-shp.mp <-readOGR(dsn="~/Projects/GOA ichthyoplankton time series/NewLateLarvalPolygon",layer="Survey_poly")
+shp.mp <-readOGR(dsn="./data/FOCI_survey_polygon",layer="Survey_poly")
 shp.mp.LL<-spTransform(shp.mp,CRS("+proj=longlat"))
 
-library(maps)
-library(mapdata)
-library(maptools)
-library(mapproj)
-
-map('worldHires',xlim=c(-170,-140),ylim=c(52,62),fill=T,col="gray",border=F)
-map(shp.mp.LL,add=T,col="blue",lwd=2)
-map.axes()
-
-## ggplot version!
 
 ## need to change Spatial Polygon to dataframe
 # add to data a new column termed "id" composed of the rownames of data
-shp.mp.LL@data$id <- rownames(shp.mp.LL@polygons)
+shp.mp.LL@data$id <- rownames(shp.mp.LL@data)
 
 # create a data.frame from our spatial object
 poly.points <- fortify(shp.mp.LL, region = "id")
@@ -242,17 +232,6 @@ inset <- ggplot(data = world) +
         panel.spacing = unit(1, 'mm'))
 
 inset  
-  
-
-
-xlim <- c(-2400000, 1600000)
-ylim <- c(100000, 2500000)
-
-
-alaska <- ggplot(data = world) +
-    geom_sf(fill = "dark grey", color = NA) +
-    coord_sf(crs = st_crs(3467), xlim = xlim, ylim = ylim, expand = FALSE, datum = NA)
-alaska
 
 
 
