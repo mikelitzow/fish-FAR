@@ -327,11 +327,11 @@ print(g)
 ## brms: setup ---------------------------------------------
 
 ## Define model formulas
-## Limiting knots to 3 to prevent overfitting
+## Limiting knots to 5 to prevent overfitting
 
-dfa1_far_formula <-  bf(trend ~ s(ssb, k = 3) + s(far, k = 3))
+dfa1_far_formula <-  bf(trend ~ s(ssb, k = 5) + s(far, k = 5))
 
-dfa2_far_formula <-  bf(trend ~ s(far, k = 3))
+dfa2_far_formula <-  bf(trend ~ s(far, k = 5))
 
 
 ## fit --------------------------------------
@@ -361,29 +361,29 @@ trace_plot(dfa1_far_brm$fit)
 dev.off()
 
 
-dfa_2_far_brm <- brm(dfa2_far_formula,
+dfa2_far_brm <- brm(dfa2_far_formula,
                 data = trend,
                 cores = 4, chains = 4, iter = 3000,
                 save_pars = save_pars(all = TRUE),
                 control = list(adapt_delta = 0.99, max_treedepth = 10))
-dfa_2_far_brm  <- add_criterion(dfa_2_far_brm, c("loo", "bayes_R2"), moment_match = TRUE)
-saveRDS(dfa_2_far_brm, file = "output/dfa_2_far_brm.rds")
+dfa2_far_brm  <- add_criterion(dfa2_far_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(dfa2_far_brm, file = "output/dfa2_far_brm.rds")
 
-dfa_2_far_brm <- readRDS("./output/dfa_2_far_brm.rds")
-check_hmc_diagnostics(dfa_2_far_brm$fit)
-neff_lowest(dfa_2_far_brm$fit)
-rhat_highest(dfa_2_far_brm$fit)
-summary(dfa_2_far_brm)
-bayes_R2(dfa_2_far_brm)
-plot(dfa_2_far_brm$criteria$loo, "k")
-plot(conditional_smooths(dfa_2_far_brm), ask = FALSE)
+dfa2_far_brm <- readRDS("./output/dfa2_far_brm.rds")
+check_hmc_diagnostics(dfa2_far_brm$fit)
+neff_lowest(dfa2_far_brm$fit)
+rhat_highest(dfa2_far_brm$fit)
+summary(dfa2_far_brm)
+bayes_R2(dfa2_far_brm)
+plot(dfa2_far_brm$criteria$loo, "k")
+plot(conditional_smooths(dfa2_far_brm), ask = FALSE)
 y <- trend$trend
-yrep_dfa_2_far_brm  <- fitted(dfa_2_far_brm, scale = "response", summary = FALSE)
-ppc_dens_overlay(y = y, yrep = yrep_dfa_2_far_brm[sample(nrow(yrep_dfa_2_far_brm), 25), ]) +
+yrep_dfa2_far_brm  <- fitted(dfa2_far_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_dfa2_far_brm[sample(nrow(yrep_dfa2_far_brm), 25), ]) +
   xlim(0, 500) +
-  ggtitle("dfa_2_far_brm")
-pdf("./figs/trace_dfa_2_far_brm.pdf", width = 6, height = 4)
-trace_plot(dfa_2_far_brm$fit)
+  ggtitle("dfa2_far_brm")
+pdf("./figs/trace_dfa2_far_brm.pdf", width = 6, height = 4)
+trace_plot(dfa2_far_brm$fit)
 dev.off()
 
 
@@ -393,15 +393,18 @@ dfa2_far_brm  <- readRDS("./output/dfa_2_far_brm.rds")
 
 loo(dfa1_far_brm, dfa2_far_brm)
 
+# fit with uncertainty in far
+dfa1_far_formula_se <-  bf(trend ~ me(FAR, FAR.SE) + I(me(FAR, FAR.SE)))
+                           
 ## plot predicted values ---------------------------------------
 ## 95% CI
-ce1s_1 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
+ce1s_1 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.025, 0.975))
 ## 90% CI
-ce1s_2 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
+ce1s_2 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.05, 0.95))
 ## 80% CI
-ce1s_3 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
+ce1s_3 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.1, 0.9))
 dat_ce <- ce1s_1$far
 dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
