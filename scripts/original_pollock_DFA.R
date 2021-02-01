@@ -262,50 +262,6 @@ obs$year <- as.numeric(as.character(obs$year_fac))
 
 trend <- left_join(trend, obs)
 
-trend$far_fac <- as.factor(if_else(trend$estimate__ >= 0.95, "high", "low"))
-
-
-## brms: setup ---------------------------------------------
-
-## Define model formula
-poll_dfa_far_formula <-  bf(trend ~  far_fac)
-
-poll_dfa_far <- brm(poll_dfa_far_formula,
-                    data = trend,
-                    cores = 4, chains = 4, iter = 4000,
-                    save_pars = save_pars(all = TRUE),
-                    control = list(adapt_delta = 0.99, max_treedepth = 10))
-saveRDS(poll_dfa_far, file = "output/poll_dfa_far.rds")
-
-poll_dfa_far <- readRDS("./output/poll_dfa_far.rds")
-check_hmc_diagnostics(poll_dfa_far$fit)
-neff_lowest(poll_dfa_far$fit)
-rhat_highest(poll_dfa_far$fit)
-summary(poll_dfa_far)
-bayes_R2(poll_dfa_far)
-
-## Predicted effects ---------------------------------------
-
-## 95% CI
-ce1s_1 <- conditional_effects(poll_dfa_far, effect = "far_fac", re_formula = NA,
-                              probs = c(0.025, 0.975))  
-
-plot <- ce1s_1$far_fac %>%
-  select(far_fac, estimate__, lower__, upper__)
-
-plot$far_fac <- reorder(plot$far_fac, desc(plot$far_fac))
-
-ggplot(plot, aes(far_fac, estimate__)) +
-  geom_point(size=3) +
-  geom_errorbar(aes(ymin=lower__, ymax=upper__), width=0.3, size=0.5) +
-  ylab("Recruitment anomaly") +
-  xlab("FAR") +
-  scale_x_discrete(labels=c(expression(""<=0.9), expression("">=0.98))) +
-  theme_bw() 
-
-
-ggsave("figs/prelim_FAR_poll_dfa_plot.png", width=1.5, height=2, units='in')
-
 ## Fit brms model - FAR as continuous variable -------------------
 # add 2020 SSB values
 ssb <- read.csv("./data/cod_pollock_assessment_2020_SAFEs.csv")
