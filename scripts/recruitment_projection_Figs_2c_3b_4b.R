@@ -225,7 +225,7 @@ ggsave("./figs/hist-projected_cod_R_with_FAR_uncertainty.png", width = 3, height
 # stock assessment model estimates
 recr <- read.csv("./data/cod_pollock_assessment_2020_SAFEs.csv")
 
-obs.dat <- recr %>%
+poll.obs.dat <- recr %>%
   filter(year %in% 1970:2019) %>%
   select(year, pollR0.2020, poll.SSB.2020) %>%
   mutate(sc.log.pollR0=as.vector(scale(log(pollR0.2020))))
@@ -241,8 +241,8 @@ obs.FAR <- obs.FAR$year_fac %>%
 
 names(obs.FAR)[2:3] <- c("FAR", "FAR.SE")
 
-obs.dat <- left_join(obs.dat, obs.FAR)
-names(obs.dat)[3] <- "SSB"
+poll.obs.dat <- left_join(poll.obs.dat, obs.FAR)
+names(poll.obs.dat)[3] <- "SSB"
 
 ## finally, load projected FAR values through 2046 - load brms object
 mod_far_fixef <- readRDS("./output/mod_far_fixef.rds")
@@ -261,8 +261,8 @@ names(proj.dat)[2:3] <- c("FAR", "FAR.SE")
 ## proj.dat is the dataframe for use as new.data when predicting 
 
 ## model recruitment as a function of FAR
-poll.R1 <- brm(sc.log.pollR0 ~ s(FAR, k = 4),
-          data = obs.dat,
+poll.R1 <- brm(sc.log.pollR0 ~ s(FAR, k = 5),
+          data = poll.obs.dat,
           save_pars = save_pars(latent = TRUE),
           cores = 4, iter = 4000, chains = 4,
           control = list(adapt_delta = 0.999, max_treedepth = 12))
@@ -272,14 +272,15 @@ poll.R1 <- add_criterion(poll.R1, c("loo", "bayes_R2"),
 
 saveRDS(poll.R1, file = "output/poll_R1_FAR_obs.rds")
 summary(poll.R1)
+bayes_R2(poll.R1)
 names(poll.R1$fit)
 plot(conditional_effects(poll.R1), points = TRUE)
 
 
 ## add SSB
 # model selection
-poll.R1s <- brm(sc.log.pollR0 ~ s(FAR, k = 4) + s(SSB, k = 4),
-               data = obs.dat,
+poll.R1s <- brm(sc.log.pollR0 ~ s(FAR, k = 5) + s(SSB, k = 5),
+               data = poll.obs.dat,
                save_pars = save_pars(latent = TRUE),
                cores = 4, iter = 4000, chains = 4,
                control = list(adapt_delta = 0.999, max_treedepth = 12))
@@ -319,8 +320,8 @@ dat_ce[["upper_90"]] <- ce1s_2$FAR[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$FAR[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$FAR[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$FAR[["lower__"]]
-# dat_ce[["rug.anom"]] <- c(unique(obs.dat$FAR),
-#                           rep(NA, 100-length(unique(obs.dat$FAR))))
+# dat_ce[["rug.anom"]] <- c(unique(poll.obs.dat$FAR),
+#                           rep(NA, 100-length(unique(poll.obs.dat$FAR))))
 
 fig.3b <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -330,13 +331,13 @@ fig.3b <- ggplot(dat_ce) +
   geom_line(size = 1, color = "red3") +
   labs(x = "Fraction of attributable risk", y = "Log recruitment anomaly") +
   theme_bw()+
-  geom_text(data = obs.dat,
+  geom_text(data = poll.obs.dat,
             aes(x = FAR, y = sc.log.pollR0, label = year), color = "grey40", size = 3) 
 print(fig.3b)
 
 ## try adding uncertainty in FAR -----------------------------------------
 poll.R2 <- brm(sc.log.pollR0 ~ 1 + me(FAR, FAR.SE) + I(me(FAR, FAR.SE)^2),
-          data = obs.dat,
+          data = poll.obs.dat,
           save_pars = save_pars(latent = TRUE),
           cores = 4, iter = 6000, chains = 4,
           control = list(adapt_delta = 0.999, max_treedepth = 16))
@@ -346,7 +347,7 @@ summary(poll.R2)
 names(poll.R2$fit)
 
 poll.R3 <- brm(sc.log.pollR0 ~ 1 + me(FAR, FAR.SE) + I(me(FAR, FAR.SE)^2) + I(me(FAR, FAR.SE)^3),
-               data = obs.dat,
+               data = poll.obs.dat,
                save_pars = save_pars(latent = TRUE),
                cores = 4, iter = 6000, chains = 4,
                control = list(adapt_delta = 0.999, max_treedepth = 16))
@@ -363,7 +364,7 @@ poll.R3 <- readRDS("./output/poll_R_FAR_w_SE_cubic.rds")
 loo(poll.R2, poll.R3)
 
 ## Predict R2 manually
-pred_far <- data.frame(FAR = seq(min(obs.dat$FAR), max(obs.dat$FAR), length.out = 100),
+pred_far <- data.frame(FAR = seq(min(poll.obs.dat$FAR), max(poll.obs.dat$FAR), length.out = 100),
                        FAR.SE = 0.00001) ## set measurement error to zero
 pred_full <- posterior_epred(poll.R2, newdata = pred_far)
 pred <- data.frame(estimate = apply(pred_full, 2, mean),
@@ -373,10 +374,10 @@ pred_df <- cbind(pred_far, pred)
 g <- ggplot(pred_df) +
     geom_ribbon(aes(x = FAR, ymin = lower, ymax = upper), fill = "grey90") +
     geom_line(aes(x = FAR, y = estimate), color = "red3") +
-    geom_point(data = obs.dat, aes(x = FAR, y = sc.log.pollR0), color = "grey25")
-    ## geom_smooth(data = obs.dat, aes(x = FAR, y = sc.log.pollR0), method = "lm",
+    geom_point(data = poll.obs.dat, aes(x = FAR, y = sc.log.pollR0), color = "grey25")
+    ## geom_smooth(data = poll.obs.dat, aes(x = FAR, y = sc.log.pollR0), method = "lm",
     ##             formula = y ~ x + I(x^2), se = FALSE, color = "blue") +
-    ## geom_segment(data = obs.dat, aes(y = sc.log.pollR0, yend = sc.log.pollR0,
+    ## geom_segment(data = poll.obs.dat, aes(y = sc.log.pollR0, yend = sc.log.pollR0,
     ##                                  x = FAR - FAR.SE, xend = FAR + FAR.SE))
 print(g)
 
@@ -463,3 +464,35 @@ cod.poll.proj.R
 
 ggsave("./figs/hist-projected_poll_cod_ R.png", width = 3, height = 3)
 ## this is Fig. 4b in the draft
+
+## calculate change in medians ------------------------------------
+summ.dat <- all.plot %>%
+  filter(decade %in% c("2020s", "Historical")) %>%
+  select(species, decade, median) %>%
+  pivot_wider(values_from = median, names_from = species)
+
+# go back to original data frames to back-calculate to original units!     
+ggplot(obs.dat, aes(sc.log.codR0, codR0.2020)) +
+  geom_point()
+
+cod.mod <- lm(log(codR0.2020) ~ sc.log.codR0, data=obs.dat, na.action = "na.exclude")
+summary(cod.mod)
+
+check <- exp(predict(cod.mod))
+
+plot(check, obs.dat$codR0.2020) # right!
+new.dat <- data.frame(sc.log.codR0 = summ.dat$cod)
+summ.dat$raw.cod <- exp(predict(cod.mod, newdata = new.dat))
+
+# and pollock
+poll.mod <- lm(log(pollR0.2020) ~ sc.log.pollR0, data=poll.obs.dat, na.action = "na.exclude")
+summary(poll.mod)
+
+check <- exp(predict(poll.mod))
+
+plot(check, poll.obs.dat$pollR0.2020) # right!
+new.dat <- data.frame(sc.log.pollR0 = summ.dat$pollock)
+summ.dat$raw.poll <- exp(predict(poll.mod, newdata = new.dat))
+
+cod.change <- (summ.dat$raw.cod[2]-summ.dat$raw.cod[1])/summ.dat$raw.cod[2]
+poll.change <- (summ.dat$raw.poll[2]-summ.dat$raw.poll[1])/summ.dat$raw.poll[2]
