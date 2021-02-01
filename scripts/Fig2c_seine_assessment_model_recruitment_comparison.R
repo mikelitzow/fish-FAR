@@ -1,6 +1,10 @@
 ## Model up seine recruitment estimates for each year
 ## and compare with stock assessment model esimated recruitment
+## 
+## Used to estimate stock assessment model estimates for years not supported by data
+## in the model (2017-2020) for Fig. 2c
 
+## Also includes extensions for recruitment prediction offshoot idea
 library(tidyverse)
 library(plyr)
 library(mgcv)
