@@ -2,6 +2,7 @@
 ## Negative binomial
 ## Smooths limited to k=3 to avoid over-fitting
 ## For Fig. 2a in the draft
+## note that cod2sg_zinb_k3 is the selected model reported in the ms.
 
 library(ggplot2)
 library(plyr)
@@ -200,7 +201,7 @@ df <- data.frame(model = c("cod0_zinb_k3", "cod0s_zinb_k3",
 df <- df[order(df$looic), ]
 print(df)
 
-
+# cod2sg_zinb_k3 is the selected model
 
 ## Predicted effects ---------------------------------------
 
