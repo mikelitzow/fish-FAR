@@ -1,5 +1,6 @@
 
 ## Compare DFA trend on three field time series with pollock stock assessment model esimated recruitment
+## This is for the recruitment prediction ofshoot idea!
 
 library(tidyverse)
 library(plyr)
