@@ -118,12 +118,7 @@ head(foci.larv)
 foci.juv <- read.csv("data/ECO-FOCI_age_0_pollock.csv")
 head(foci.juv)
 
-# load mace age-1 index
-mace <- read.csv("./data/MACE_age_1_pollock.csv")
-head(mace)
-mace$year.0 <- mace$year-1
-
-# combine the four data sets
+# combine the three data sets
 seine.dat <- ce1s_1$year_fac %>%
   mutate(year = as.numeric(as.character(year_fac))) %>%
   select(year, estimate__)
@@ -132,44 +127,38 @@ names(seine.dat)[2] <- "seine.est"
 names(foci.larv)[2:3] <- c("larv.est", "year") 
 names(foci.juv)[1:2] <- c("year", "juv.est")
 
-mace <- mace %>%
-  select(-year)
-names(mace) <- c("mace.est.lag1", "year")
 
 dat <- data.frame(year = 1981:2020)
 
 dat <- left_join(dat, foci.larv)
 dat <- left_join(dat, foci.juv)
-dat <- left_join(dat, mace)
 dat <- left_join(dat, seine.dat)
 
 head(dat)
 
 # clean up!
 dat <- dat %>%
-  select(year, larv.est, juv.est, mace.est.lag1, seine.est)
+  select(year, larv.est, juv.est, seine.est)
 
 # now log-transform and scale!
 scaled.dat <- dat
-for(j in 2:5){
+for(j in 2:4){
   
-  scaled.dat[,j] <- as.vector(scale(log(dat[,j]+0.01)))
-  # adding a constant b/c mace has 1 year = 0!
+  scaled.dat[,j] <- as.vector(scale(log(dat[,j])))
+
   
 }
 
 # check correlations
-cor(scaled.dat[,2:5], use="p") # pretty strong!
+cor(scaled.dat[,2:4], use="p") # pretty strong!
 
 
 ## fit a DFA model ---------------------------------------------
 
 # set up data
-dfa.dat <- as.matrix(t(scaled.dat[,2:5]))
+dfa.dat <- as.matrix(t(scaled.dat[,2:4]))
 colnames(dfa.dat) <- scaled.dat$year
 
-## compare with reduced model (no MACE data, which is alrady in assessment!)
-reduced.dat <- dfa.dat[rownames(dfa.dat) != "mace.est.lag1",]
 
 # set up forms of R matrices
 levels.R = c("diagonal and equal",
@@ -208,7 +197,7 @@ model.data
 # changing convergence criterion to ensure convergence
 cntl.list = list(minit=200, maxit=20000, allow.degen=FALSE, conv.test.slope.tol=0.1, abstol=0.0001)
 model.list = list(A="zero", m=1, R="diagonal and equal")
-dfa.mod = MARSS(reduced.dat[,colnames(reduced.dat) %in% 1987:2020], model=model.list, z.score=TRUE, form="dfa")
+dfa.mod = MARSS(dfa.dat[,colnames(dfa.dat) %in% 1987:2020], model=model.list, z.score=TRUE, form="dfa")
 
 # get CI and plot loadings...
 modCI <- MARSSparamCIs(dfa.mod)
@@ -219,11 +208,12 @@ loadings <- data.frame(names = c("Larval", "Age-0 trawl", "Age-0 seine"),
                        upCI = modCI$par.upCI$Z,
                        lowCI = modCI$par.lowCI$Z)
 
-ggplot(loadings, aes(names, loading)) +
+load.plot <- ggplot(loadings, aes(names, loading)) +
   geom_bar(stat="identity", fill="light grey") +
   geom_errorbar(aes(ymin=lowCI, ymax=upCI), width=0.2) +
   theme(axis.title.x = element_blank(),
-        axis.text.x = element_text(angle=45, vjust=0.5)) 
+        axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
+  ylab("Loading")
 
 ggsave("./figs/reduced_pollock_DFA_loadings.png", width=2, height=2, units = 'in')
 
@@ -234,13 +224,30 @@ trend <- data.frame(year = 1987:2020,
                     ymin = as.vector(dfa.mod$states-1.96*dfa.mod$states.se),
                     ymax = as.vector(dfa.mod$states+1.96*dfa.mod$states.se))
 
-ggplot(trend, aes(year, trend)) +
+trend.plot <- ggplot(trend, aes(year, trend)) +
   geom_ribbon(aes(ymin=ymin, ymax=ymax), fill="grey90") +
-  geom_line(color="red") 
+  geom_line(color="red") +
+  geom_point(color="red") +
+  geom_hline(yintercept = 0) +
+  theme(axis.title.x = element_blank()) +
+  ylab("Trend")
 
-write.csv(trend, "./output/poll_dfa_trend.csv")
+trend.plot
 
 ggsave("./figs/reduced_pollock_DFA_trend.png", width=3, height=2, units = 'in')
+
+# save combined plot
+png("./figs/reduced_DFA_loadings_trend.png", width=7, height=3, units='in', res=300)
+
+ggpubr::ggarrange(load.plot, trend.plot, 
+                  ncol=2,
+                  labels=c("a", "b"),
+                  widths=c(0.5,1))
+
+dev.off()
+
+write.csv(trend, "./output/poll_dfa_trend.csv")
+trend <- read.csv("./output/poll_dfa_trend.csv")
 
 ## fit brms model - FAR as factor ------------------------------------
 
