@@ -21,7 +21,7 @@ obs$model_fac <- as.factor(obs$model)
 mod$year_fac <- as.factor(mod$year)
 mod$model_fac <- as.factor(mod$source)
 
-# change FAR = 1 to Far = 0.999 to allow beta distribution??
+# change FAR = 1 to Far = 0.9999 to allow beta distribution
 change <- obs$FAR == 1 
 obs$FAR[change] <- 0.9999
 
@@ -32,7 +32,7 @@ mod$FAR[change] <- 0.9999
 hist(obs$FAR, breaks = 50)
 
 ## brms: setup ---------------------------------------------
-
+## This is the observed FAR time series for Fig. 1a
 ## Define model formulas
 far_formula_fixef <-  bf(FAR ~ year_fac + (1 | model_fac))
 
@@ -104,7 +104,7 @@ print(g1)
 
 ggsave("./figs/year_predicted_effect_obs_far.png", width = 4.5, height = 2)
 
-
+## modeled time series of CMIP5 projections for Fig. 4a
 ## model outputs
 mod_far_fixef <- brm(far_formula_fixef,
                      data = mod,
