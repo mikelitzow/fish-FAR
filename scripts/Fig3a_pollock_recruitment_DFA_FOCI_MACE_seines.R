@@ -329,7 +329,7 @@ print(g)
 ## Define model formulas
 ## Limiting knots to 5 to prevent overfitting
 
-dfa1_far_formula <-  bf(trend ~ s(ssb, k = 5) + s(far, k = 5))
+dfa1_far_formula <-  bf(trend ~ s(ssb, k = 3) + s(far, k = 5))
 
 dfa2_far_formula <-  bf(trend ~ s(far, k = 5))
 
