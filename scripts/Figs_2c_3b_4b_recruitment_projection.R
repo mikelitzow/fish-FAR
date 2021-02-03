@@ -96,6 +96,9 @@ names(R1$fit)
 R1 <- readRDS("./output/cod_R_FAR_obs.rds")
 bayes_R2(R1)
 plot(conditional_effects(R1), points = TRUE)
+check_hmc_diagnostics(R1$fit)
+neff_lowest(R1$fit)
+rhat_highest(R1$fit)
 
 # quick look at results
 ce1s_1 <- conditional_effects(R1)
@@ -116,6 +119,9 @@ names(R2$fit)
 
 R2 <- readRDS("./output/cod_R_FAR_w_SE.rds")
 plot(conditional_effects(R2), points = TRUE)
+check_hmc_diagnostics(R2$fit)
+neff_lowest(R2$fit)
+rhat_highest(R2$fit)
 
 ## Predicted effects ---------------------------------------
 
@@ -275,7 +281,9 @@ summary(poll.R1)
 bayes_R2(poll.R1)
 names(poll.R1$fit)
 plot(conditional_effects(poll.R1), points = TRUE)
-
+check_hmc_diagnostics(poll.R1$fit)
+neff_lowest(poll.R1$fit)
+rhat_highest(poll.R1$fit)
 
 ## add SSB
 # model selection
@@ -292,6 +300,9 @@ saveRDS(poll.R1s, file = "output/poll_R1s_FAR_obs.rds")
 summary(poll.R1s)
 names(poll.R1s$fit)
 plot(conditional_effects(poll.R1s), points = TRUE)
+check_hmc_diagnostics(poll.R1s$fit)
+neff_lowest(poll.R1s$fit)
+rhat_highest(poll.R1s$fit)
 
 
 ## model selection -----------------------------
