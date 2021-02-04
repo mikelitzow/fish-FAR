@@ -12,8 +12,8 @@ source("./scripts/stan_utils.R")
 
 
 ## Read in data --------------------------------------------
-obs <- read.csv(".data/ERSST FAR.csv", row.names=1)
-mod <- read.csv(".data/CMIP FAR.csv", row.names=1)
+obs <- read.csv("./data/ERSST FAR.csv", row.names=1)
+mod <- read.csv("./data/CMIP FAR.csv", row.names=1)
 
 obs$year_fac <- as.factor(obs$year)
 obs$model_fac <- as.factor(obs$model)
@@ -42,7 +42,7 @@ far_formula_fixef <-  bf(FAR ~ year_fac + (1 | model_fac))
 obs_far_fixef <- brm(far_formula_fixef,
                      data = obs,
                      family = Beta(),
-                     cores = 4, chains = 4, iter = 6000,
+                     cores = 4, chains = 4, iter = 15000,
                      save_pars = save_pars(all = TRUE),
                      control = list(adapt_delta = 0.999, max_treedepth = 15))
 obs_far_fixef  <- add_criterion(obs_far_fixef, c("loo", "bayes_R2"), moment_match = TRUE)
@@ -109,7 +109,7 @@ ggsave("./figs/year_predicted_effect_obs_far.png", width = 4.5, height = 2)
 mod_far_fixef <- brm(far_formula_fixef,
                      data = mod,
                      family = Beta(),
-                     cores = 4, chains = 4, iter = 6000,
+                     cores = 4, chains = 4, iter = 15000,
                      save_pars = save_pars(all = TRUE),
                      control = list(adapt_delta = 0.99, max_treedepth = 15))
 mod_far_fixef  <- add_criterion(mod_far_fixef, c("loo", "bayes_R2"), moment_match = TRUE)
