@@ -11,7 +11,7 @@ source("./scripts/stan_utils.R")
 
 
 ## Read in data --------------------------------------------
-cod.data <- read.csv("data/cpue.data.csv", row.names = 1)
+cod.data <- read.csv("data/cpue.data.csv")
 cod.data$bay_fac <- as.factor(cod.data$bay)
 cod.data$year_fac <- as.factor(cod.data$year)
 cod.data$site_fac <- as.factor(cod.data$site)
