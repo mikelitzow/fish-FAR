@@ -81,7 +81,7 @@ poll_recr_2_zinb_reduced_bays <- brm(recr_2_formula,
                         family = zinb,
                         cores = 4, chains = 4, iter = 6000,
                         save_pars = save_pars(all = TRUE),
-                        control = list(adapt_delta = 0.99, max_treedepth = 10))
+                        control = list(adapt_delta = 0.999, max_treedepth = 10))
 poll_recr_2_zinb_reduced_bays  <- add_criterion(poll_recr_2_zinb_reduced_bays, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(poll_recr_2_zinb_reduced_bays, file = "output/poll_recr_2_zinb_reduced_bays.rds")
 
@@ -227,7 +227,7 @@ model.data
 ## best model is equalvarcov - but that returns loadings of 0!
 # changing convergence criterion to ensure convergence
 cntl.list = list(minit=200, maxit=20000, allow.degen=FALSE, conv.test.slope.tol=0.1, abstol=0.0001)
-model.list = list(A="zero", m=1, R="diagonal and equal")
+model.list = list(A="zero", m=1, R="diagonal and unequal")
 dfa.mod = MARSS(dfa.dat, model=model.list, z.score=TRUE, form="dfa")
 
 # get CI and plot loadings...
@@ -444,17 +444,17 @@ trend <- left_join(trend, temp)
 ## Define model formulas
 ## Limiting knots to 3 to prevent overfitting
 
-dfa_temp1_formula <-  bf(trend ~ s(ssb, k = 3) + s(mean.anom, k = 3))
+dfa_temp1_formula <-  bf(trend ~ s(ssb, k = 3) + s(mean.anom, k = 5))
 
-dfa_temp2_formula <-  bf(trend ~ s(mean.anom, k = 3))
+dfa_temp2_formula <-  bf(trend ~ s(mean.anom, k = 5))
 
 
 ## fit --------------------------------------
 dfa_temp1_brm <- brm(dfa_temp1_formula,
                 data = trend,
-                cores = 4, chains = 4, iter = 3000,
+                cores = 4, chains = 4, iter = 4000,
                 save_pars = save_pars(all = TRUE),
-                control = list(adapt_delta = 0.99, max_treedepth = 10))
+                control = list(adapt_delta = 0.999, max_treedepth = 10))
 dfa_temp1_brm  <- add_criterion(dfa_temp1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(dfa_temp1_brm, file = "output/dfa_temp1_brm.rds")
 
@@ -478,9 +478,9 @@ dev.off()
 
 dfa_temp2_brm <- brm(dfa_temp2_formula,
                 data = trend,
-                cores = 4, chains = 4, iter = 3000,
+                cores = 4, chains = 4, iter = 4000,
                 save_pars = save_pars(all = TRUE),
-                control = list(adapt_delta = 0.99, max_treedepth = 10))
+                control = list(adapt_delta = 0.999, max_treedepth = 10))
 dfa_temp2_brm  <- add_criterion(dfa_temp2_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(dfa_temp2_brm, file = "output/dfa_temp2_brm.rds")
 
