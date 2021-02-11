@@ -81,7 +81,7 @@ poll_recr_2_zinb_reduced_bays <- brm(recr_2_formula,
                         family = zinb,
                         cores = 4, chains = 4, iter = 6000,
                         save_pars = save_pars(all = TRUE),
-                        control = list(adapt_delta = 0.999, max_treedepth = 10))
+                        control = list(adapt_delta = 0.9999, max_treedepth = 10))
 poll_recr_2_zinb_reduced_bays  <- add_criterion(poll_recr_2_zinb_reduced_bays, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(poll_recr_2_zinb_reduced_bays, file = "output/poll_recr_2_zinb_reduced_bays.rds")
 
@@ -454,7 +454,7 @@ dfa_temp1_brm <- brm(dfa_temp1_formula,
                 data = trend,
                 cores = 4, chains = 4, iter = 4000,
                 save_pars = save_pars(all = TRUE),
-                control = list(adapt_delta = 0.999, max_treedepth = 10))
+                control = list(adapt_delta = 0.9999, max_treedepth = 10))
 dfa_temp1_brm  <- add_criterion(dfa_temp1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(dfa_temp1_brm, file = "output/dfa_temp1_brm.rds")
 
@@ -478,9 +478,9 @@ dev.off()
 
 dfa_temp2_brm <- brm(dfa_temp2_formula,
                 data = trend,
-                cores = 4, chains = 4, iter = 4000,
+                cores = 4, chains = 4, iter = 5000,
                 save_pars = save_pars(all = TRUE),
-                control = list(adapt_delta = 0.999, max_treedepth = 10))
+                control = list(adapt_delta = 0.9999, max_treedepth = 10))
 dfa_temp2_brm  <- add_criterion(dfa_temp2_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(dfa_temp2_brm, file = "output/dfa_temp2_brm.rds")
 
