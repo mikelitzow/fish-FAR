@@ -108,73 +108,14 @@ pdf("./figs/trace_recr_2_zinb.pdf", width = 6, height = 4)
 trace_plot(recr_2_zinb$fit)
 dev.off()
 
-## fit: only 2006-2017-----------------------------------
-recr_1_zinb_06_17 <- brm(recr_1_formula,
-                   data = cod.data[cod.data$year %in% 2006:2017,],
-                   prior = priors_zinb,
-                   family = zinb,
-                   cores = 4, chains = 4, iter = 3000,
-                   save_pars = save_pars(all = TRUE),
-                   control = list(adapt_delta = 0.99, max_treedepth = 10))
-recr_1_zinb_06_17  <- add_criterion(recr_1_zinb_06_17, c("loo", "bayes_R2"), moment_match = TRUE)
-saveRDS(recr_1_zinb_06_17, file = "output/recr_1_zinb_06_17.rds")
-
-recr_1_zinb_06_17 <- readRDS("./output/recr_1_zinb_06_17.rds")
-check_hmc_diagnostics(recr_1_zinb_06_17$fit)
-neff_lowest(recr_1_zinb_06_17$fit)
-rhat_highest(recr_1_zinb_06_17$fit)
-summary(recr_1_zinb_06_17)
-bayes_R2(recr_1_zinb_06_17)
-plot(recr_1_zinb_06_17$criteria$loo, "k")
-plot(conditional_smooths(recr_1_zinb_06_17), ask = FALSE)
-plot(recr_1_zinb_06_17, ask = FALSE)
-y <- cod.data$cod
-yrep_recr_1_zinb_06_17  <- fitted(recr_1_zinb_06_17, scale = "response", summary = FALSE)
-ppc_dens_overlay(y = y, yrep = yrep_recr_1_zinb_06_17[sample(nrow(yrep_recr_1_zinb_06_17), 25), ]) +
-  xlim(0, 500) +
-  ggtitle("recr_1_zinb_06_17")
-pdf("./figs/trace_recr_1_zinb_06_17.pdf", width = 6, height = 4)
-trace_plot(recr_1_zinb_06_17$fit)
-dev.off()
-
-recr_2_zinb_06_17 <- brm(recr_2_formula,
-                   data = cod.data[cod.data$year %in% 2006:2017,],
-                   prior = priors_zinb,
-                   family = zinb,
-                   cores = 4, chains = 4, iter = 3000,
-                   save_pars = save_pars(all = TRUE),
-                   control = list(adapt_delta = 0.99, max_treedepth = 10))
-recr_2_zinb_06_17  <- add_criterion(recr_2_zinb_06_17, c("loo", "bayes_R2"), moment_match = TRUE)
-saveRDS(recr_2_zinb_06_17, file = "output/recr_2_zinb_06_17.rds")
-
-recr_2_zinb_06_17 <- readRDS("./output/recr_2_zinb_06_17.rds")
-check_hmc_diagnostics(recr_2_zinb_06_17$fit)
-neff_lowest(recr_2_zinb_06_17$fit)
-rhat_highest(recr_2_zinb_06_17$fit)
-summary(recr_2_zinb_06_17)
-bayes_R2(recr_2_zinb_06_17)
-plot(recr_2_zinb_06_17$criteria$loo, "k")
-plot(conditional_smooths(recr_2_zinb_06_17), ask = FALSE)
-y <- cod.data$cod
-yrep_recr_2_zinb_06_17  <- fitted(recr_2_zinb_06_17, scale = "response", summary = FALSE)
-ppc_dens_overlay(y = y, yrep = yrep_recr_2_zinb_06_17[sample(nrow(yrep_recr_2_zinb_06_17), 25), ]) +
-  xlim(0, 500) +
-  ggtitle("recr_2_zinb_06_17")
-pdf("./figs/trace_recr_2_zinb_06_17.pdf", width = 6, height = 4)
-trace_plot(recr_2_zinb_06_17$fit)
-dev.off()
-
 
 ## Model comparison ---------------------------------------
 recr_1_zinb <- readRDS("./output/recr_1_zinb.rds")
 recr_2_zinb <- readRDS("./output/recr_2_zinb.rds")
-recr_1_zinb_06_17 <- readRDS("./output/recr_1_zinb_06_17.rds")
-recr_2_zinb_06_17 <- readRDS("./output/recr_2_zinb_06_17.rds")
 
 loo(recr_1_zinb, recr_2_zinb)
-loo(recr_1_zinb_06_17, recr_2_zinb_06_17)
 
-# model 2 best in both cases
+# model 2 best
 
 
 ## Predicted effects ---------------------------------------
