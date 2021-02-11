@@ -338,9 +338,11 @@ dfa2_far_formula <-  bf(trend ~ s(far, k = 5))
 dfa1_far_brm <- brm(dfa1_far_formula,
                 data = trend,
                 cores = 4, chains = 4, iter = 3000,
+                seed = 1234,
                 save_pars = save_pars(all = TRUE),
                 control = list(adapt_delta = 0.999, max_treedepth = 10))
-dfa1_far_brm  <- add_criterion(dfa1_far_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+dfa1_far_brm  <- add_criterion(dfa1_far_brm, c("loo", "bayes_R2"),
+                               moment_match = TRUE)
 saveRDS(dfa1_far_brm, file = "output/dfa1_far_brm.rds")
 
 dfa1_far_brm <- readRDS("./output/dfa1_far_brm.rds")
@@ -452,10 +454,12 @@ dfa_temp2_formula <-  bf(trend ~ s(mean.anom, k = 5))
 ## fit --------------------------------------
 dfa_temp1_brm <- brm(dfa_temp1_formula,
                 data = trend,
+                seed = 1234,
                 cores = 4, chains = 4, iter = 4000,
                 save_pars = save_pars(all = TRUE),
                 control = list(adapt_delta = 0.9999, max_treedepth = 10))
-dfa_temp1_brm  <- add_criterion(dfa_temp1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+dfa_temp1_brm  <- add_criterion(dfa_temp1_brm, c("loo", "bayes_R2"),
+                                moment_match = TRUE)
 saveRDS(dfa_temp1_brm, file = "output/dfa_temp1_brm.rds")
 
 dfa_temp1_brm <- readRDS("./output/dfa_temp1_brm.rds")
