@@ -365,6 +365,7 @@ dev.off()
 
 dfa2_far_brm <- brm(dfa2_far_formula,
                 data = trend,
+                seed = 1234,
                 cores = 4, chains = 4, iter = 3000,
                 save_pars = save_pars(all = TRUE),
                 control = list(adapt_delta = 0.99, max_treedepth = 10))
