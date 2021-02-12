@@ -27,10 +27,8 @@ loo(recr_1_zinb, recr_2_zinb)
 ## y = assessment recruitment
 codR1_brm  <- readRDS("./output/codR1_brm.rds") ## seine + ssb
 codR2_brm  <- readRDS("./output/codR2_brm.rds") ## seine
-codR3_brm  <- readRDS("./output/codR3_brm.rds") ## seine + seine:far
-codR4_brm  <- readRDS("./output/codR4_brm.rds") ## seine:far
 
-loo(codR1_brm, codR2_brm, codR3_brm, codR4_brm)
+loo(codR1_brm, codR2_brm)
 
 
 ## 4. Pollock DFA (fig. 3a) --------------------------------
