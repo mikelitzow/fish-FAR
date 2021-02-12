@@ -24,6 +24,7 @@ loo(recr_1_zinb, recr_2_zinb)
 
 
 ## 3. Cod recruitment models (fig. 2c) ---------------------
+## (predicting stock assessment model recruitment from seine data)
 ## y = assessment recruitment
 codR1_brm  <- readRDS("./output/codR1_brm.rds") ## seine + ssb
 codR2_brm  <- readRDS("./output/codR2_brm.rds") ## seine
