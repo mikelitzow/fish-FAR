@@ -54,14 +54,15 @@ priors_zinb <- c(set_prior("normal(0, 3)", class = "b"),
 
 ## fit: zero-inflated --------------------------------------
 recr_1_zinb <- brm(recr_1_formula,
-                    data = cod.data,
-                    prior = priors_zinb,
-                    family = zinb,
-                    cores = 4, chains = 4, iter = 3000,
-                    save_pars = save_pars(all = TRUE),
-                    control = list(adapt_delta = 0.99, max_treedepth = 10))
-recr_1_zinb  <- add_criterion(recr_1_zinb, c("loo", "bayes_R2"), moment_match = TRUE)
+                   data = cod.data,
+                   prior = priors_zinb,
+                   family = zinb,
+                   seed = 123,
+                   cores = 4, chains = 4, iter = 3000,
+                   save_pars = save_pars(all = TRUE),
+                   control = list(adapt_delta = 0.99, max_treedepth = 10))
 saveRDS(recr_1_zinb, file = "output/recr_1_zinb.rds")
+recr_1_zinb  <- add_criterion(recr_1_zinb, c("loo", "bayes_R2"), moment_match = TRUE)
 
 recr_1_zinb <- readRDS("./output/recr_1_zinb.rds")
 check_hmc_diagnostics(recr_1_zinb$fit)
@@ -85,9 +86,10 @@ recr_2_zinb <- brm(recr_2_formula,
                    data = cod.data,
                    prior = priors_zinb,
                    family = zinb,
+                   seed = 12345,
                    cores = 4, chains = 4, iter = 3000,
                    save_pars = save_pars(all = TRUE),
-                   control = list(adapt_delta = 0.99, max_treedepth = 10))
+                   control = list(adapt_delta = 0.999, max_treedepth = 10))
 recr_2_zinb  <- add_criterion(recr_2_zinb, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(recr_2_zinb, file = "output/recr_2_zinb.rds")
 
@@ -176,10 +178,11 @@ codR2_formula <-  bf(model ~ seine)
 
 ## fit --------------------------------------
 codR1_brm <- brm(codR1_formula,
-                    data = dat,
-                    cores = 4, chains = 4, iter = 3000,
-                    save_pars = save_pars(all = TRUE),
-                    control = list(adapt_delta = 0.999, max_treedepth = 10))
+                 data = dat,
+                 seed = 1234,
+                 cores = 4, chains = 4, iter = 3000,
+                 save_pars = save_pars(all = TRUE),
+                 control = list(adapt_delta = 0.999, max_treedepth = 10))
 codR1_brm  <- add_criterion(codR1_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(codR1_brm, file = "output/codR1_brm.rds")
 
@@ -202,10 +205,11 @@ dev.off()
 
 
 codR2_brm <- brm(codR2_formula,
-                     data = dat,
-                     cores = 4, chains = 4, iter = 3000,
-                     save_pars = save_pars(all = TRUE),
-                     control = list(adapt_delta = 0.999, max_treedepth = 10))
+                 data = dat,
+                 seed = 1234,
+                 cores = 4, chains = 4, iter = 3000,
+                 save_pars = save_pars(all = TRUE),
+                 control = list(adapt_delta = 0.999, max_treedepth = 10))
 codR2_brm  <- add_criterion(codR2_brm, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(codR2_brm, file = "output/codR2_brm.rds")
 

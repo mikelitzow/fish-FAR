@@ -269,11 +269,12 @@ names(proj.dat)[2:3] <- c("FAR", "FAR.SE")
 ## model recruitment as a function of FAR
 poll.R1 <- brm(sc.log.pollR0 ~ s(FAR, k = 5),
           data = poll.obs.dat,
-          save_pars = save_pars(latent = TRUE),
+          seed = 1234,
+          save_pars = save_pars(all = TRUE),
           cores = 4, iter = 4000, chains = 4,
           control = list(adapt_delta = 0.999, max_treedepth = 12))
 poll.R1 <- add_criterion(poll.R1, c("loo", "bayes_R2"),
-                         moment_match = TRUE, reloo = TRUE,
+                         moment_match = TRUE, reloo = FALSE,
                          cores = 4, k_threshold = 0.7)
 
 saveRDS(poll.R1, file = "output/poll_R1_FAR_obs.rds")
@@ -289,7 +290,8 @@ rhat_highest(poll.R1$fit)
 # model selection
 poll.R1s <- brm(sc.log.pollR0 ~ s(FAR, k = 5) + s(SSB, k = 5),
                data = poll.obs.dat,
-               save_pars = save_pars(latent = TRUE),
+               seed = 1234,
+               save_pars = save_pars(all = TRUE),
                cores = 4, iter = 4000, chains = 4,
                control = list(adapt_delta = 0.999, max_treedepth = 12))
 poll.R1s <- add_criterion(poll.R1s, c("loo", "bayes_R2"),

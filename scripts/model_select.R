@@ -17,8 +17,6 @@ loo(cod0_zinb_k3, cod0s_zinb_k3,
 ## y = cod CPUE
 recr_1_zinb <- readRDS("./output/recr_1_zinb.rds")  ## year_fac + bay_fac
 recr_2_zinb <- readRDS("./output/recr_2_zinb.rds")  ## year_fac + bay_fac/site_fac
-recr_1_zinb$data
-recr_2_zinb$data
 
 loo(recr_1_zinb, recr_2_zinb)
 
