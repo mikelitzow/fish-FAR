@@ -1,0 +1,13 @@
+"name","response","covars","LOOIC","LOOIC_delta"
+"M1","Cod CPUE","bay",7991.74276784771,294.693134155402
+"M1","Cod CPUE","bay/site",7858.41421948594,161.364585793633
+"M1","Cod CPUE","bay/site + temp",7710.78055359989,13.7309199075853
+"M1","Cod CPUE","bay/site + temp + ssb",7697.04963369231,0
+"M2","Cod CPUE","year + bay",7625.8114795163,206.926333196371
+"M2","Cod CPUE","year + bay/site",7418.88514631993,0
+"M3","Recruitment","seine + ssb",17.9306178025854,5.7330264906558
+"M3","Recruitment","seine",12.1975913119296,0
+"M4","DFA trend","far + ssb",92.6242650087303,2.40823844807487
+"M4","DFA trend","far",90.2160265606554,0
+"M5","Recruitment","far",127.656027777434,0
+"M5","Recruitment","far + ssb",129.908610822968,2.2525830455335
