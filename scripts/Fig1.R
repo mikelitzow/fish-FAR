@@ -202,7 +202,7 @@ poly.points <- fortify(shp.mp.LL, region = "id")
 # merge the "fortified" data with the data from our spatial object
 ichthyo <- merge(poly.points, shp.mp.LL@data, by = "id")
 
-# combine with age-0 trawl polygon
+# combine with age-0 trawl and age-1 acoustic polygons
 trawl <- data.frame(long = c(-159.7,-158.3,-155,-156.3,-159.7),
                     lat = c(55.9,54.7,56.1,57.2,55.9),
                     type = "Juvenile trawl")
