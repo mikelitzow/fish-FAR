@@ -155,7 +155,7 @@ names(seine.dat)[2] <- "seine.est"
 names(foci.larv)[2:3] <- c("larv.est", "year") 
 names(foci.juv)[1:2] <- c("year", "juv.est")
 
-dat <- data.frame(year = 1981:2020)
+dat <- data.frame(year = 1980:2020)
 
 dat <- left_join(dat, foci.larv)
 dat <- left_join(dat, foci.juv)
@@ -169,7 +169,7 @@ dat <- dat %>%
   select(year, larv.est, juv.est, mace.est.lag1, seine.est)
 
 # now log-transform and scale!
-# ad constant to mace (to avoid log of 0!)
+# add constant to mace (to avoid log of 0!)
 dat$mace.est.lag1 <- dat$mace.est.lag1+0.01
 
 scaled.dat <- dat
@@ -255,7 +255,7 @@ ggsave("./figs/full_pollock_DFA_loadings.png", width=2, height=2, units = 'in')
 
 
 # plot trend
-trend <- data.frame(year = 1981:2020,
+trend <- data.frame(year = 1980:2020,
                     trend = as.vector(dfa.mod$states),
                     ymin = as.vector(dfa.mod$states-1.96*dfa.mod$states.se),
                     ymax = as.vector(dfa.mod$states+1.96*dfa.mod$states.se))
@@ -392,7 +392,7 @@ dev.off()
 
 ## Model selection -----------------------------------------
 dfa1_far_brm  <- readRDS("./output/dfa1_far_brm.rds")
-dfa2_far_brm  <- readRDS("./output/dfa_2_far_brm.rds")
+dfa2_far_brm  <- readRDS("./output/dfa2_far_brm.rds")
 
 loo(dfa1_far_brm, dfa2_far_brm)
 
