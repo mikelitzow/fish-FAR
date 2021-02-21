@@ -401,13 +401,13 @@ dfa1_far_formula_se <-  bf(trend ~ me(FAR, FAR.SE) + I(me(FAR, FAR.SE)))
                            
 ## plot predicted values ---------------------------------------
 ## 95% CI
-ce1s_1 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
+ce1s_1 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.025, 0.975))
 ## 90% CI
-ce1s_2 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
+ce1s_2 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.05, 0.95))
 ## 80% CI
-ce1s_3 <- conditional_effects(dfa1_far_brm, effect = "far", re_formula = NA,
+ce1s_3 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.1, 0.9))
 dat_ce <- ce1s_1$far
 dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
@@ -432,7 +432,7 @@ fig.3a <- ggplot(dat_ce) +
             aes(x = far, y = trend, label = year), color = "grey40", size = 3) 
 print(fig.3a)
 
-ggsave("./figs/continuous_far_predicted_effect_dfa1_far_brm.png", width = 3, height = 2)
+ggsave("./figs/continuous_far_predicted_effect_dfa2_far_brm.png", width = 3, height = 2)
 
 ## temp anom -------------------------------
 temp <- read.csv("./data/pollock godas anomalies.csv")
