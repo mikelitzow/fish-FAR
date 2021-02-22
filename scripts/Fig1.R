@@ -35,7 +35,7 @@ plot.temps <- temps %>%
 
 temp.fig <- ggplot(plot.temps, aes(year, value, color=name, linetype=name)) +
   geom_line() +
-  scale_color_manual(values = cb[c(7,3,3,4,4)]) +
+  scale_color_manual(values = cb[c(7,2,2,4,4)]) +
   scale_linetype_manual(values= c(1,1,2,1,2)) +
   ylab("Temperature (°C)") +
   ylim(3.2, 10.2) +
@@ -45,7 +45,7 @@ temp.fig <- ggplot(plot.temps, aes(year, value, color=name, linetype=name)) +
         legend.direction = "horizontal",
         legend.text = element_text(size=8),
         legend.margin = margin(0.1, 0.1, 0.1, 0.1, unit = "mm"),
-        legend.key.width = unit(4, units="mm")) +
+        legend.key.width = unit(5, units="mm")) +
   guides(col=guide_legend(nrow=1))
 
 print(temp.fig)
@@ -189,8 +189,8 @@ ssb.fig <- ggplot(plot.s, aes(year, est/1000, color=sp, fill=sp)) +
   geom_line() +
   coord_trans(y = "pseudo_log") +
   geom_ribbon(aes(ymin=UCI/1000, ymax=LCI/1000), alpha = 0.2, lty=0) +
-  scale_color_manual(values=cb[3:4]) +
-  scale_fill_manual(values=cb[3:4]) +
+  scale_color_manual(values=cb[c(2,4)]) +
+  scale_fill_manual(values=cb[c(2,4)]) +
   scale_y_continuous(breaks=c(50, 100, 200, 400, 600, 800)) +
   ylab("Thousands of tons") +
   theme(axis.title.x = element_blank(),
