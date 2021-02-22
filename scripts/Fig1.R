@@ -13,6 +13,61 @@ theme_set(theme_bw())
 # set palette
 cb <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
+## temperature panel ----------------------------
+
+# load GOA sst for area matching downscaled CMIP5 output
+sst <- read.csv("./data/annual_sst.csv", row.names = 1)
+names(sst)[2] <- "annual SST"
+
+# load egg/larval temperatures
+cod.temp <- read.csv("./data/raw_cod_godas_temp.csv", row.names = 1)
+names(cod.temp)[2:3] <- c("cod larval", "cod egg")
+
+pollock.temp <- read.csv("./data/raw_pollock_godas_temp.csv", row.names = 1)
+names(pollock.temp)[2:3] <- c("pollock egg", "pollock larval")
+
+temps <- left_join(sst, cod.temp)
+temps <- left_join(temps, pollock.temp)
+
+plot.temps <- temps %>%
+  pivot_longer(cols=-year) %>%
+  filter(year >= 1970)
+
+temp.fig <- ggplot(plot.temps, aes(year, value, color=name, linetype=name)) +
+  geom_line() +
+  scale_color_manual(values = cb[c(7,3,3,4,4)]) +
+  scale_linetype_manual(values= c(1,1,2,1,2)) +
+  ylab("Temperature (°C)") +
+  ylim(3.2, 10.2) +
+  theme(legend.title = element_blank(),
+        legend.position = c(0.5, 0.05),
+        axis.title.x = element_blank(),
+        legend.direction = "horizontal",
+        legend.text = element_text(size=8),
+        legend.margin = margin(0.1, 0.1, 0.1, 0.1, unit = "mm"),
+        legend.key.width = unit(4, units="mm")) +
+  guides(col=guide_legend(nrow=1))
+
+print(temp.fig)
+
+# scale each wrt 1981-2010
+means <- apply(temps[temps$year %in% 1981:2010,], 2, mean)
+sd <- apply(temps[temps$year %in% 1981:2010,], 2, sd)
+
+for(j in 2:6){
+  
+  temps[,j] <- (temps[,j]-means[j])/sd[j]
+  
+}
+
+
+sc.temps <- temps %>%
+  pivot_longer(cols=-year) %>%
+  filter(year >= 1980)
+
+
+ggplot(sc.temps, aes(year, value, color=name)) +
+  geom_line()
 
 ## far panel ---------
 
@@ -268,8 +323,8 @@ full.map <- map.plot +
 
 full.map
 
-png("./figs/Fig1.png", width = 4, height = 7, units = 'in', res = 300)
-ggpubr::ggarrange(far.fig, ssb.fig, full.map, 
-                  ncol=1, 
-                  labels = c("a", "b", "c"))
+png("./figs/Fig1.png", width = 10, height = 7, units = 'in', res = 300)
+ggpubr::ggarrange(temp.fig, far.fig, ssb.fig, full.map, 
+                  ncol=2, nrow=2,
+                  labels = c("a", "b", "c", "d"))
 dev.off()
