@@ -38,7 +38,7 @@ temp.fig <- ggplot(plot.temps, aes(year, value, color=name, linetype=name)) +
   scale_color_manual(values = cb[c(7,2,2,4,4)]) +
   scale_linetype_manual(values= c(1,1,2,1,2)) +
   ylab("Temperature (°C)") +
-  ylim(3.2, 10.2) +
+  ylim(2.8, 10.2) +
   theme(legend.title = element_blank(),
         legend.position = c(0.5, 0.05),
         axis.title.x = element_blank(),
