@@ -158,14 +158,19 @@ for(i in seq_along(m4_pars)) {
 ## y = pollock DFA trend
 dfa_temp1_brm  <- readRDS("./output/dfa_temp1_brm.rds") ## ssb + mean.anom
 dfa_temp2_brm  <- readRDS("./output/dfa_temp2_brm.rds") ## mean.anom
-loo(dfa_temp1_brm, dfa_temp2_brm)
+dfa_temp3_brm  <- readRDS("./output/dfa_temp3_brm.rds") ## ssb + larval anom
+dfa_temp4_brm  <- readRDS("./output/dfa_temp4_brm.rds") ## larval.anom
+loo(dfa_temp1_brm, dfa_temp2_brm, dfa_temp3_brm, dfa_temp4_brm)
 
 
 m5_looic    <- c(dfa_temp1_brm$criteria$loo$estimates["looic", "Estimate"],
-                  dfa_temp2_brm$criteria$loo$estimates["looic", "Estimate"])
+                  dfa_temp2_brm$criteria$loo$estimates["looic", "Estimate"],
+                 dfa_temp3_brm$criteria$loo$estimates["looic", "Estimate"],
+                 dfa_temp4_brm$criteria$loo$estimates["looic", "Estimate"])
 m5_name     <- rep("M5", length(m5_looic))
 m5_response <- rep("DFA trend", length(m5_looic))
-m5_covars   <- c("ssb + temp", "temp")
+m5_covars   <- c("ssb + egg/larval temp", "egg/larval temp",
+                 "ssb + larval temp", "larval temp")
 m5_delta    <- m5_looic - min(m5_looic)
 m5_tab      <- data.frame(name = m5_name,
                           response = m5_response,
