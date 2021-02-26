@@ -128,6 +128,8 @@ plot.dat <- rbind(red, full) %>%
   select(analysis, year_fac, estimate__, lower__, upper__) %>%
   pivot_wider(names_from = analysis, values_from = c(estimate__, lower__, upper__))
 
+cor(plot.dat[,2:3])
+
 ggplot(plot.dat, aes(estimate___full, estimate___reduced)) +
   geom_point(size=1,alpha=0.7) +
   labs(x="Full data (fish / set)", y = "Reduced data (fish / set)")
@@ -438,7 +440,7 @@ ggsave("./figs/continuous_far_predicted_effect_dfa2_far_brm.png", width = 3, hei
 temp <- read.csv("./data/pollock godas anomalies.csv")
 
 temp <- temp %>%
-  select(year, mean.anom)
+  select(year, mean.anom, larval)
 
 trend <- left_join(trend, temp)
 
@@ -451,6 +453,9 @@ dfa_temp1_formula <-  bf(trend ~ s(ssb, k = 3) + s(mean.anom, k = 5))
 
 dfa_temp2_formula <-  bf(trend ~ s(mean.anom, k = 5))
 
+dfa_temp3_formula <-  bf(trend ~ s(ssb, k = 3) + s(larval, k = 5))
+
+dfa_temp4_formula <-  bf(trend ~ s(larval, k = 5))
 
 ## fit --------------------------------------
 dfa_temp1_brm <- brm(dfa_temp1_formula,
@@ -506,9 +511,62 @@ pdf("./figs/trace_dfa_temp2_brm.pdf", width = 6, height = 4)
 trace_plot(dfa_temp2_brm$fit)
 dev.off()
 
+dfa_temp3_brm <- brm(dfa_temp3_formula,
+                     data = trend,
+                     seed = 1234,
+                     cores = 4, chains = 4, iter = 4000,
+                     save_pars = save_pars(all = TRUE),
+                     control = list(adapt_delta = 0.9999, max_treedepth = 10))
+dfa_temp3_brm  <- add_criterion(dfa_temp3_brm, c("loo", "bayes_R2"),
+                                moment_match = TRUE)
+saveRDS(dfa_temp3_brm, file = "output/dfa_temp3_brm.rds")
+
+dfa_temp3_brm <- readRDS("./output/dfa_temp3_brm.rds")
+check_hmc_diagnostics(dfa_temp3_brm$fit)
+neff_lowest(dfa_temp3_brm$fit)
+rhat_highest(dfa_temp3_brm$fit)
+summary(dfa_temp3_brm)
+bayes_R2(dfa_temp3_brm)
+plot(dfa_temp3_brm$criteria$loo, "k")
+plot(conditional_smooths(dfa_temp3_brm), ask = FALSE)
+y <- trend$trend
+yrep_dfa_temp3_brm  <- fitted(dfa_temp3_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_dfa_temp3_brm[sample(nrow(yrep_dfa_temp3_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("dfa_temp3_brm")
+pdf("./figs/trace_dfa_temp3_brm.pdf", width = 6, height = 4)
+trace_plot(dfa_temp3_brm$fit)
+dev.off()
+
+
+dfa_temp4_brm <- brm(dfa_temp4_formula,
+                     data = trend,
+                     cores = 4, chains = 4, iter = 5000,
+                     save_pars = save_pars(all = TRUE),
+                     control = list(adapt_delta = 0.9999, max_treedepth = 10))
+dfa_temp4_brm  <- add_criterion(dfa_temp4_brm, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(dfa_temp4_brm, file = "output/dfa_temp4_brm.rds")
+
+dfa_temp4_brm <- readRDS("./output/dfa_temp4_brm.rds")
+check_hmc_diagnostics(dfa_temp4_brm$fit)
+neff_lowest(dfa_temp4_brm$fit)
+rhat_highest(dfa_temp4_brm$fit)
+summary(dfa_temp4_brm)
+bayes_R2(dfa_temp4_brm)
+plot(dfa_temp4_brm$criteria$loo, "k")
+plot(conditional_smooths(dfa_temp4_brm), ask = FALSE)
+y <- trend$trend
+yrep_dfa_temp4_brm  <- fitted(dfa_temp4_brm, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_dfa_temp4_brm[sample(nrow(yrep_dfa_temp4_brm), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("dfa_temp4_brm")
+pdf("./figs/trace_dfa_temp4_brm.pdf", width = 6, height = 4)
+trace_plot(dfa_temp4_brm$fit)
+dev.off()
 
 ## Model selection -----------------------------------------
 dfa_temp1_brm  <- readRDS("./output/dfa_temp1_brm.rds")
 dfa_temp2_brm  <- readRDS("./output/dfa_temp2_brm.rds")
-
-loo(dfa_temp1_brm, dfa_temp2_brm)
+dfa_temp3_brm  <- readRDS("./output/dfa_temp3_brm.rds")
+dfa_temp4_brm  <- readRDS("./output/dfa_temp4_brm.rds")
+loo(dfa_temp1_brm, dfa_temp2_brm, dfa_temp3_brm, dfa_temp4_brm)
