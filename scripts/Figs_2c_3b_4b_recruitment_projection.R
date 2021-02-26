@@ -471,7 +471,7 @@ cod.poll.proj.R <- ggplot(all.plot, aes(decade, median, color=species)) +
   theme(axis.title.x = element_blank(),
         legend.title = element_blank(),
         legend.position = c(0.8, 0.8)) +
-  scale_color_manual(values=cb[3:4])
+  scale_color_manual(values=cb[c(2,4)])
 
 cod.poll.proj.R
 
