@@ -130,7 +130,19 @@ ce1s_1 <- conditional_effects(recr_2_zinb, effect = "year_fac", re_formula = NA,
 
 # ce1s_1 is far better!
 print(ce1s_1)
-ggsave("./figs/annual_recruitment_estimates_recr_2_zinb.png", width = 7, height = 4)
+
+# make a plot for the SI
+plot.dat <- ce1s_1$year_fac
+
+ggplot(plot.dat, aes(year_fac, estimate__)) +
+  geom_point() +
+  geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
+  coord_trans(y = "pseudo_log") +
+  scale_y_continuous(breaks = c(0,1,5,10,50,100,200,500)) +
+  theme(axis.title.x = element_blank()) +
+  labs(y = "Fish / set")
+
+ggsave("./figs/SI_annual_recruitment_estimates_recr_2_zinb.png", width = 6, height = 3.5)
 
 # load assessment time series
 recr <- read.csv("data/cod_pollock_assessment_2020_SAFEs.csv", row.names = 1)
