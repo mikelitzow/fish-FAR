@@ -229,3 +229,16 @@ model_best <- rbind(m1_best, m2_best, m3_best, m4_best, m5_best, m6_best)
 write.csv(model_best, "./output/model_best.csv", row.names = FALSE)
 
 
+## Best model - direct temperature effects on pollock -------------
+
+dfa_temp4 <- readRDS("./output/dfa_temp4_brm.rds")
+
+m7_mat <- as.matrix(dfa_temp4, pars = c("^Intercept", "sds_", "sd"))
+m7_sum <- t(apply(m7_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
+m7_best <- cbind(name = "m7", parameter = row.names(m7_sum), as.data.frame(m7_sum))
+row.names(m7_best) <- NULL
+m7_pars <- list(c("Intercept", "Intercept"),
+                c("sds_slarval_1", "SD Smooth: larval"))
+for(i in seq_along(m7_pars)) {
+    m7_best$parameter[m7_best$parameter == m7_pars[[i]][1]] <- m7_pars[[i]][2]
+}
