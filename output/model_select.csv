@@ -7,9 +7,11 @@
 "M2","Cod CPUE","year + doy + bay/site",7418.88514631993,0
 "M3","Recruitment","seine + ssb",17.9306178025854,5.7330264906558
 "M3","Recruitment","seine",12.1975913119296,0
-"M4","DFA trend","far + ssb",92.6242650087303,2.40823844807487
-"M4","DFA trend","far",90.2160265606554,0
-"M5","DFA trend","ssb + temp",95.4550999132278,1.32476116677262
-"M5","DFA trend","temp",94.1303387464552,0
+"M4","DFA trend","far + ssb",92.9613983660795,2.11965801605871
+"M4","DFA trend","far",90.8417403500208,0
+"M5","DFA trend","ssb + egg/larval temp",96.281899519854,2.96914132748981
+"M5","DFA trend","egg/larval temp",95.1543136175934,1.84155542522927
+"M5","DFA trend","ssb + larval temp",95.0845867026332,1.77182851026906
+"M5","DFA trend","larval temp",93.3127581923642,0
 "M6","Recruitment","far",127.656027777434,0
 "M6","Recruitment","far + ssb",129.908610822968,2.2525830455335

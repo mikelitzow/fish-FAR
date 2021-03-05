@@ -131,7 +131,7 @@ dfa2_far_brm  <- readRDS("./output/dfa2_far_brm.rds")  ## far
 loo(dfa1_far_brm, dfa2_far_brm)
 
 m4_looic    <- c(dfa1_far_brm$criteria$loo$estimates["looic", "Estimate"],
-              dfa2_far_brm$criteria$loo$estimates["looic", "Estimate"])
+                 dfa2_far_brm$criteria$loo$estimates["looic", "Estimate"])
 m4_name     <- rep("M4", length(m4_looic))
 m4_response <- rep("DFA trend", length(m4_looic))
 m4_covars   <- c("far + ssb", "far")
@@ -164,7 +164,7 @@ loo(dfa_temp1_brm, dfa_temp2_brm, dfa_temp3_brm, dfa_temp4_brm)
 
 
 m5_looic    <- c(dfa_temp1_brm$criteria$loo$estimates["looic", "Estimate"],
-                  dfa_temp2_brm$criteria$loo$estimates["looic", "Estimate"],
+                 dfa_temp2_brm$criteria$loo$estimates["looic", "Estimate"],
                  dfa_temp3_brm$criteria$loo$estimates["looic", "Estimate"],
                  dfa_temp4_brm$criteria$loo$estimates["looic", "Estimate"])
 m5_name     <- rep("M5", length(m5_looic))
@@ -230,7 +230,6 @@ write.csv(model_best, "./output/model_best.csv", row.names = FALSE)
 
 
 ## Best model - direct temperature effects on pollock -------------
-
 dfa_temp4 <- readRDS("./output/dfa_temp4_brm.rds")
 
 m7_mat <- as.matrix(dfa_temp4, pars = c("^Intercept", "sds_", "sd"))
