@@ -33,7 +33,7 @@ m1_tab      <- data.frame(name = m1_name,
 ## Best model
 m1_mat <- as.matrix(cod2sg_zinb_k3, pars = c("^Intercept", "sds_", "sd"))
 m1_sum <- t(apply(m1_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
-m1_best <- cbind(name = "M1", parameter = row.names(m1_sum), as.data.frame(m1_sum))
+m1_best <- cbind(name = "M1", parameter = row.names(m1_sum), stringsAsFactors = F, as.data.frame(m1_sum))
 row.names(m1_best) <- NULL
 m1_pars <- list(c("Intercept", "Intercept"),
                 c("Intercept_zi", "ZI Intercept"),
