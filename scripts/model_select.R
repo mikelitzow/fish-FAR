@@ -75,7 +75,7 @@ m2_tab      <- data.frame(name = m2_name,
 ## TODO include year effects??
 m2_mat <- as.matrix(recr_2_zinb, pars = c("^Intercept", "sds_", "sd"))
 m2_sum <- t(apply(m2_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
-m2_best <- cbind(name = "M2", parameter = row.names(m2_sum), as.data.frame(m2_sum))
+m2_best <- cbind(name = "M2", parameter = row.names(m2_sum), stringsAsFactors = F, as.data.frame(m2_sum))
 row.names(m2_best) <- NULL
 m2_pars <- list(c("Intercept", "Intercept"),
                 c("Intercept_zi", "ZI Intercept"),
@@ -113,7 +113,7 @@ m3_tab      <- data.frame(name = m3_name,
 ## Best model
 m3_mat <- as.matrix(codR2_brm, pars = c("^Intercept", "seine"))
 m3_sum <- t(apply(m3_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
-m3_best <- cbind(name = "M3", parameter = row.names(m3_sum), as.data.frame(m3_sum))
+m3_best <- cbind(name = "M3", parameter = row.names(m3_sum), stringsAsFactors = F, as.data.frame(m3_sum))
 row.names(m3_best) <- NULL
 m3_pars <- list(c("Intercept", "Intercept"),
                 c("b_seine", "Seine"))
@@ -127,6 +127,13 @@ for(i in seq_along(m3_pars)) {
 ## y = pollock DFA trend
 dfa1_far_brm  <- readRDS("./output/dfa1_far_brm.rds")  ## ssb + far
 dfa2_far_brm  <- readRDS("./output/dfa2_far_brm.rds")  ## far
+dfa_temp1_brm  <- readRDS("./output/dfa_temp1_brm.rds") ## ssb + mean.anom
+dfa_temp2_brm  <- readRDS("./output/dfa_temp2_brm.rds") ## mean.anom
+dfa_temp3_brm  <- readRDS("./output/dfa_temp3_brm.rds") ## ssb + larval anom
+dfa_temp4_brm  <- readRDS("./output/dfa_temp4_brm.rds") ## larval.anom
+
+loo(dfa1_far_brm, dfa2_far_brm, dfa_temp1_brm, dfa_temp2_brm, dfa_temp3_brm, dfa_temp4_brm)
+
 
 loo(dfa1_far_brm, dfa2_far_brm)
 
@@ -145,7 +152,7 @@ m4_tab      <- data.frame(name = m4_name,
 ## Best model
 m4_mat <- as.matrix(dfa2_far_brm, pars = c("^Intercept", "sds_", "sd"))
 m4_sum <- t(apply(m4_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
-m4_best <- cbind(name = "M4", parameter = row.names(m4_sum), as.data.frame(m4_sum))
+m4_best <- cbind(name = "M4", parameter = row.names(m4_sum), stringsAsFactors = F, as.data.frame(m4_sum))
 row.names(m4_best) <- NULL
 m4_pars <- list(c("Intercept", "Intercept"),
                 c("sds_sfar_1", "SD Smooth: FAR"))
@@ -181,7 +188,7 @@ m5_tab      <- data.frame(name = m5_name,
 ## Best model
 m5_mat <- as.matrix(dfa_temp2_brm, pars = c("^Intercept", "sds_", "sd"))
 m5_sum <- t(apply(m5_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
-m5_best <- cbind(name = "M5", parameter = row.names(m5_sum), as.data.frame(m5_sum))
+m5_best <- cbind(name = "M5", parameter = row.names(m5_sum), stringsAsFactors = F, as.data.frame(m5_sum))
 row.names(m5_best) <- NULL
 m5_pars <- list(c("Intercept", "Intercept"),
                 c("sds_smean.anom_1", "SD Smooth: Temp"))
@@ -212,12 +219,39 @@ m6_tab      <- data.frame(name = m6_name,
 ## Best model
 m6_mat <- as.matrix(poll.R1, pars = c("^Intercept", "sds_", "sd"))
 m6_sum <- t(apply(m6_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
-m6_best <- cbind(name = "M6", parameter = row.names(m6_sum), as.data.frame(m6_sum))
+m6_best <- cbind(name = "M6", parameter = row.names(m6_sum), stringsAsFactors = F, as.data.frame(m6_sum))
 row.names(m6_best) <- NULL
 m6_pars <- list(c("Intercept", "Intercept"),
                 c("sds_sFAR_1", "SD Smooth: FAR"))
 for(i in seq_along(m6_pars)) {
     m6_best$parameter[m6_best$parameter == m6_pars[[i]][1]] <- m6_pars[[i]][2]
+}
+
+
+## 7. Pollock DFA -------------
+dfa_temp4 <- readRDS("./output/dfa_temp4_brm.rds")
+
+
+m6_looic    <- c(poll.R1$criteria$loo$estimates["looic", "Estimate"],
+                 poll.R1s$criteria$loo$estimates["looic", "Estimate"])
+m6_name     <- rep("M6", length(m6_looic))
+m6_response <- rep("Recruitment", length(m6_looic))
+m6_covars   <- c("far", "far + ssb")
+m6_delta    <- m6_looic - min(m6_looic)
+m6_tab      <- data.frame(name = m6_name,
+                          response = m6_response,
+                          covars = m6_covars,
+                          LOOIC = m6_looic,
+                          LOOIC_delta = m6_delta)
+
+m7_mat <- as.matrix(dfa_temp4, pars = c("^Intercept", "sds_", "sd"))
+m7_sum <- t(apply(m7_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
+m7_best <- cbind(name = "m7", parameter = row.names(m7_sum), stringsAsFactors = F, as.data.frame(m7_sum))
+row.names(m7_best) <- NULL
+m7_pars <- list(c("Intercept", "Intercept"),
+                c("sds_slarval_1", "SD Smooth: larval"))
+for(i in seq_along(m7_pars)) {
+    m7_best$parameter[m7_best$parameter == m7_pars[[i]][1]] <- m7_pars[[i]][2]
 }
 
 
@@ -228,16 +262,3 @@ write.csv(model_select, "./output/model_select.csv", row.names = FALSE)
 model_best <- rbind(m1_best, m2_best, m3_best, m4_best, m5_best, m6_best)
 write.csv(model_best, "./output/model_best.csv", row.names = FALSE)
 
-
-## Best model - direct temperature effects on pollock -------------
-dfa_temp4 <- readRDS("./output/dfa_temp4_brm.rds")
-
-m7_mat <- as.matrix(dfa_temp4, pars = c("^Intercept", "sds_", "sd"))
-m7_sum <- t(apply(m7_mat, 2, function(x) quantile(x, probs = c(0.0275, 0.5, 0.975))))
-m7_best <- cbind(name = "m7", parameter = row.names(m7_sum), as.data.frame(m7_sum))
-row.names(m7_best) <- NULL
-m7_pars <- list(c("Intercept", "Intercept"),
-                c("sds_slarval_1", "SD Smooth: larval"))
-for(i in seq_along(m7_pars)) {
-    m7_best$parameter[m7_best$parameter == m7_pars[[i]][1]] <- m7_pars[[i]][2]
-}
