@@ -570,3 +570,40 @@ dfa_temp2_brm  <- readRDS("./output/dfa_temp2_brm.rds")
 dfa_temp3_brm  <- readRDS("./output/dfa_temp3_brm.rds")
 dfa_temp4_brm  <- readRDS("./output/dfa_temp4_brm.rds")
 loo(dfa_temp1_brm, dfa_temp2_brm, dfa_temp3_brm, dfa_temp4_brm)
+
+## plot best temperature model
+
+## plot predicted values ---------------------------------------
+## 95% CI
+ce1s_1 <- conditional_effects(dfa_temp4_brm, effect = "larval", re_formula = NA,
+                              probs = c(0.025, 0.975))
+## 90% CI
+ce1s_2 <- conditional_effects(dfa_temp4_brm, effect = "larval", re_formula = NA,
+                              probs = c(0.05, 0.95))
+## 80% CI
+ce1s_3 <- conditional_effects(dfa_temp4_brm, effect = "larval", re_formula = NA,
+                              probs = c(0.1, 0.9))
+dat_ce <- ce1s_1$larval
+dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
+dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
+dat_ce[["upper_90"]] <- ce1s_2$larval[["upper__"]]
+dat_ce[["lower_90"]] <- ce1s_2$larval[["lower__"]]
+dat_ce[["upper_80"]] <- ce1s_3$larval[["upper__"]]
+dat_ce[["lower_80"]] <- ce1s_3$larval[["lower__"]]
+# dat_ce[["rug.anom"]] <- c(jitter(unique(trend$far), amount = 0.01),
+#                           rep(NA, 100-length(unique(trend$far))))
+
+
+fig.SI <- ggplot(dat_ce) +
+  aes(x = effect1__, y = estimate__) +
+  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
+  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
+  geom_line(size = 1, color = "red3") +
+  labs(x = "Larval temperature anomaly", y = "DFA trend") +
+  theme_bw()+
+  geom_text(data = trend,
+            aes(x = larval, y = trend, label = year), color = "grey40", size = 3) 
+print(fig.SI)
+
+ggsave("./figs/SI_larval_temp_pollock_dfa_temp4_brm.png", width = 3, height = 2)
