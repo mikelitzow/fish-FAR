@@ -606,4 +606,4 @@ fig.SI <- ggplot(dat_ce) +
             aes(x = larval, y = trend, label = year), color = "grey40", size = 3) 
 print(fig.SI)
 
-ggsave("./figs/SI_larval_temp_pollock_dfa_temp4_brm.png", width = 3, height = 2)
+ggsave("./figs/SI_larval_temp_pollock_dfa_temp4_brm.png", width = 4, height = 3)
