@@ -1,17 +1,17 @@
 "name","response","covars","LOOIC","LOOIC_delta"
-"M1","Cod CPUE","doy + bay",7991.74276784771,294.693134155402
-"M1","Cod CPUE","doy + bay/site",7858.41421948594,161.364585793633
-"M1","Cod CPUE","doy + bay/site + temp",7710.78055359989,13.7309199075853
-"M1","Cod CPUE","doy + bay/site + temp + ssb",7697.04963369231,0
-"M2","Cod CPUE","year + doy + bay",7625.8114795163,206.926333196371
-"M2","Cod CPUE","year + doy + bay/site",7418.88514631993,0
-"M3","Recruitment","seine + ssb",17.9306178025854,5.7330264906558
-"M3","Recruitment","seine",12.1975913119296,0
-"M4","DFA trend","far + ssb",92.9613983660795,2.11965801605871
-"M4","DFA trend","far",90.8417403500208,0
-"M5","DFA trend","ssb + egg/larval temp",96.281899519854,2.96914132748981
-"M5","DFA trend","egg/larval temp",95.1543136175934,1.84155542522927
-"M5","DFA trend","ssb + larval temp",95.0845867026332,1.77182851026906
-"M5","DFA trend","larval temp",93.3127581923642,0
-"M6","Recruitment","far",127.656027777434,0
-"M6","Recruitment","far + ssb",129.908610822968,2.2525830455335
+"M1","Cod seine abundance","DOY + bay",7991.74276784771,294.693134155402
+"M1","Cod seine abundance","DOY + bay/site",7858.41421948594,161.364585793633
+"M1","Cod seine abundance","DOY + bay/site + temp",7710.78055359989,13.7309199075853
+"M1","Cod seine abundance","DOY + bay/site + temp + SSB",7697.04963369231,0
+"M2","Cod seine abundance","year + DOY + bay",7625.8114795163,206.926333196371
+"M2","Cod seine abundance","year + DOY + bay/site",7418.88514631993,0
+"M3","Cod model recruitment estimate","seine + SSB",17.9306178025854,5.7330264906558
+"M3","Cod model recruitment estimate","seine",12.1975913119296,0
+"M4","Pollock DFA trend","FAR + SSB",92.9613983660795,2.11965801605871
+"M4","Pollock DFA trend","FAR",90.8417403500208,0
+"M4","Pollock DFA trend","SSB + egg/larval temp",96.281899519854,5.44015916983317
+"M4","Pollock DFA trend","egg/larval temp",95.1543136175934,4.31257326757263
+"M4","Pollock DFA trend","SSB + larval temp",95.0845867026332,4.24284635261242
+"M4","Pollock DFA trend","larval temp",93.3127581923642,2.47101784234336
+"M5","Pollock model recruitment estimate","FAR",127.656027777434,0
+"M5","Pollock model recruitment estimate","FAR + SSB",129.908610822968,2.2525830455335
