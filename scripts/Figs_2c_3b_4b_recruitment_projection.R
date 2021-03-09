@@ -95,6 +95,7 @@ names(R1$fit)
 
 R1 <- readRDS("./output/cod_R_FAR_obs.rds")
 bayes_R2(R1)
+summary(R1)
 plot(conditional_effects(R1), points = TRUE)
 check_hmc_diagnostics(R1$fit)
 neff_lowest(R1$fit)
