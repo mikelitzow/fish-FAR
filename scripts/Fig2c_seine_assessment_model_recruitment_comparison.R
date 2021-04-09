@@ -1,5 +1,5 @@
 ## Model up seine recruitment estimates for each year
-## and compare with stock assessment model esimated recruitment
+## and compare with stock assessment model estimated recruitment
 ## 
 ## Used to estimate stock assessment model estimates for years not supported by data
 ## in the model (2017-2020) for Fig. 2c
@@ -143,6 +143,13 @@ ggplot(plot.dat, aes(year_fac, estimate__)) +
   labs(y = "Fish / set")
 
 ggsave("./figs/SI_annual_recruitment_estimates_recr_2_zinb.png", width = 6, height = 3.5)
+
+## save the time series to share with collaborators
+save.dat <- plot.dat %>%
+  select(7:11)
+
+names(save.dat) <- c("year", "cpue", "SE", "LCI", "UCI")
+write.csv(save.dat, "./output/cod_seine_annual_cpue_estimates.csv", row.names = F)
 
 # load assessment time series
 recr <- read.csv("data/cod_pollock_assessment_2020_SAFEs.csv", row.names = 1)
