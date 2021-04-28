@@ -328,3 +328,37 @@ ggpubr::ggarrange(temp.fig, far.fig, ssb.fig, full.map,
                   ncol=2, nrow=2,
                   labels = c("a", "b", "c", "d"))
 dev.off()
+
+## reduced version for Laurel et al.
+
+map.plot <- ggplot(ak) +  
+  geom_path(data=filter(polys, type=="Larval survey"), aes(long, lat, color=type), lwd=1.5) +
+  geom_sf(fill="darkgoldenrod3", color=NA) + 
+  coord_sf(xlim = c(-163, -151), ylim = c(54.5, 59.5), expand = FALSE) +
+  geom_point(data = bays, aes(-lon, lat, fill=type), size=3, shape=21) +
+  theme(axis.title = element_blank(),
+        legend.position = c(0.85, 0.2),
+        legend.text = element_text(size=8),
+        legend.title = element_blank(),
+        legend.margin = margin(-2,0,0,0,unit='mm'),
+        legend.background = element_rect(fill = 'transparent', linetype=0),
+        legend.spacing.y = unit(1, 'mm')) +
+  scale_fill_manual(values=cb[4]) +
+  scale_color_manual(values=cb[c(6,7,3)]) +
+  scale_x_continuous(breaks = c(-160, -156, -152)) +
+  scale_y_continuous(breaks = c(55, 56, 57, 58, 59))
+
+map.plot
+
+full.map <- map.plot +
+  annotation_custom(
+    grob = ggplotGrob(inset),
+    xmin = -163,
+    xmax = -158,
+    ymin = 57,
+    ymax = 59.5
+  ) 
+
+full.map
+
+ggsave("./figs/Fig1_Laurel.png", width = 5, height = 3.25, units = 'in')
