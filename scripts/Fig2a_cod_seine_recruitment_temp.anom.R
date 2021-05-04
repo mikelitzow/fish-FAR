@@ -254,13 +254,13 @@ ggsave("./figs/temp.anom_predicted_effect_cod2sg_zinb_k3.png", width = 3, height
 ## Julian predictions ##
 
 ## 95% CI
-ce1s_1 <- conditional_effects(cod2sg3_zinb_k3, effect = "julian", re_formula = NA,
+ce1s_1 <- conditional_effects(cod2sg_zinb_k3, effect = "julian", re_formula = NA,
                               probs = c(0.025, 0.975))
 ## 90% CI
-ce1s_2 <- conditional_effects(cod2sg3_zinb_k3, effect = "julian", re_formula = NA,
+ce1s_2 <- conditional_effects(cod2sg_zinb_k3, effect = "julian", re_formula = NA,
                               probs = c(0.05, 0.95))
 ## 80% CI
-ce1s_3 <- conditional_effects(cod2sg3_zinb_k3, effect = "julian", re_formula = NA,
+ce1s_3 <- conditional_effects(cod2sg_zinb_k3, effect = "julian", re_formula = NA,
                               probs = c(0.1, 0.9))
 dat_ce <- ce1s_1$julian
 dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
@@ -276,22 +276,23 @@ g <- ggplot(dat_ce) +
     geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
     geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
     geom_line(size = 1.5, color = "red3") +
+    coord_trans(y = "pseudo_log") +
     labs(x = "Day of year", y = "Cod abundance") +
     theme_bw()
 print(g)
-ggsave("./figs/julian_predicted_effect_cod2sg3_zinb_k3.png", width = 5, height = 4)
+ggsave("./figs/julian_predicted_effect_cod2sg_zinb_k3.png", width = 5, height = 4)
 
 
 ## SSB predictions ##
 
 ## 95% CI
-ce1s_1 <- conditional_effects(cod2sg3_zinb_k3, effect = "ssb", re_formula = NA,
+ce1s_1 <- conditional_effects(cod2sg_zinb_k3, effect = "ssb", re_formula = NA,
                               probs = c(0.025, 0.975))
 ## 90% CI
-ce1s_2 <- conditional_effects(cod2sg3_zinb_k3, effect = "ssb", re_formula = NA,
+ce1s_2 <- conditional_effects(cod2sg_zinb_k3, effect = "ssb", re_formula = NA,
                               probs = c(0.05, 0.95))
 ## 80% CI
-ce1s_3 <- conditional_effects(cod2sg3_zinb_k3, effect = "ssb", re_formula = NA,
+ce1s_3 <- conditional_effects(cod2sg_zinb_k3, effect = "ssb", re_formula = NA,
                               probs = c(0.1, 0.9))
 dat_ce <- ce1s_1$ssb
 dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
@@ -308,53 +309,9 @@ g <- ggplot(dat_ce) +
     geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
     geom_line(size = 1.5, color = "red3") +
     labs(x = "SSB", y = "Cod abundance") +
+    coord_trans(y = "pseudo_log") +
     theme_bw()
 print(g)
 ggsave("./figs/SSB_predicted_effect_cod2sg3_zinb_k3.png", width = 5, height = 4)
 
 
-## Conditional smooths -------------------------------------
-
-## SST smooths ##
-cs1s_1 <- conditional_smooths(cod2s_zinb_k3, smooths = "s(sst,k=5)",
-                              probs = c(0.025, 0.975))
-
-dat_cs1 <- cs1s_1[["mu: s(sst,k=5)"]]
-dat_cs2 <- cs1s_1[["zi: s(sst,k=5)"]]
-dat_cs1[["label"]] <- "Cod abundance"
-dat_cs2[["label"]] <- "Probability of zero cod"
-dat_cs <- rbind(dat_cs1, dat_cs2)
-
-g <- ggplot(dat_cs) +
-    aes(x = effect1__, y = estimate__) +
-    geom_hline(yintercept = 0, color = "grey50", linetype = 2) +
-    geom_ribbon(aes(ymin = lower__, ymax = upper__), fill = "grey80") +
-    geom_line(size = 1.5, color = "red3") +
-    labs(x = "SST", y = "Partial effect") +
-    facet_wrap( ~ label, ncol = 1, scales = "free") +
-    theme_bw()
-print(g)
-ggsave("./figs/smooths_sst_cod2s_zinb_k3.png", width = 5, height = 6)
-
-
-
-## Julian smooths ##
-cs1s_1 <- conditional_smooths(cod2s_zinb_k3, smooths = "s(julian,k=5)",
-                              probs = c(0.025, 0.975))
-
-dat_cs1 <- cs1s_1[["mu: s(julian,k=5)"]]
-dat_cs2 <- cs1s_1[["zi: s(julian,k=5)"]]
-dat_cs1[["label"]] <- "Cod abundance"
-dat_cs2[["label"]] <- "Probability of zero cod"
-dat_cs <- rbind(dat_cs1, dat_cs2)
-
-g <- ggplot(dat_cs) +
-    aes(x = effect1__, y = estimate__) +
-    geom_hline(yintercept = 0, color = "grey50", linetype = 2) +
-    geom_ribbon(aes(ymin = lower__, ymax = upper__), fill = "grey80") +
-    geom_line(size = 1.5, color = "red3") +
-    labs(x = "Day of year", y = "Partial effect") +
-    facet_wrap( ~ label, ncol = 1, scales = "free") +
-    theme_bw()
-print(g)
-ggsave("./figs/smooths_julian_cod2s_zinb_k3.png", width = 5, height = 6)
