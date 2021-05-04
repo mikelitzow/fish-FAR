@@ -15,6 +15,7 @@ source("./scripts/stan_utils.R")
 
 ## Read in data --------------------------------------------
 cod.data <- read.csv("data/cpue.data.csv")
+cod.data$cod <- cod.data$cod.age.0
 cod.data$bay_fac <- as.factor(cod.data$bay)
 cod.data$year_fac <- as.factor(cod.data$year)
 cod.data$site_fac <- as.factor(cod.data$site)
@@ -22,8 +23,15 @@ cod.data$bay_site_fac <- as.factor(paste0(cod.data$bay, "_", cod.data$site))
 cod.data$present <- ifelse(cod.data$cod > 0, 1, 0)
 cod.data$date <- as.Date(cod.data$julian,
                          origin = paste0(cod.data$year, "-01-01"))
-cod.data$ssb <- cod.data$cod.ssb
 
+# add ssb data
+ssb.data <- read.csv("./data/cod_pollock_assessment_2020_SAFEs.csv")
+ssb.data <- ssb.data %>%
+    select(year, codR0.2020)
+names(ssb.data)[2] <- "ssb"
+cod.data <- left_join(cod.data, ssb.data)
+
+# add temperature data
 temp.data <- read.csv("data/godas.anomalies.csv")
 cod.data$temp.anom <- temp.data$mean.anom[match(as.numeric(as.character(cod.data$year)), temp.data$year)]
 
