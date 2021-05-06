@@ -5,6 +5,7 @@
 ## note that cod2sg_zinb_k3 is the selected model reported in the ms.
 
 library(ggplot2)
+library(dplyr)
 library(plyr)
 library(mgcv)
 library(rstan)
@@ -27,7 +28,7 @@ cod.data$date <- as.Date(cod.data$julian,
 # add ssb data
 ssb.data <- read.csv("./data/cod_pollock_assessment_2020_SAFEs.csv")
 ssb.data <- ssb.data %>%
-    select(year, codR0.2020)
+    select(year, codSSB.2020)
 names(ssb.data)[2] <- "ssb"
 cod.data <- left_join(cod.data, ssb.data)
 
@@ -174,7 +175,7 @@ cod2sg_zinb_k3 <- brm(cod2sg_formula,
                    control = list(adapt_delta = 0.999, max_treedepth = 10))
 cod2sg_zinb_k3  <- add_criterion(cod2sg_zinb_k3, c("loo", "bayes_R2"),
                                  moment_match = TRUE, reloo = TRUE,
-                                 cores = 4, k_threshold = 0.7)
+                                 cores = 4, k_threshold = 0.7) # warning - set seed = T
 saveRDS(cod2sg_zinb_k3, file = "output/cod2sg_zinb_k3.rds")
 
 cod2sg_zinb_k3 <- readRDS("./output/cod2sg_zinb_k3.rds")
@@ -198,6 +199,9 @@ cod2sg_zinb_k3 <- readRDS("./output/cod2sg_zinb_k3.rds")
 
 loo(cod0_zinb_k3, cod0s_zinb_k3,
     cod1sg_zinb_k3, cod2sg_zinb_k3, moment_match = T, reloo = T)
+
+loo(cod0_zinb_k3, cod0s_zinb_k3,
+    cod1sg_zinb_k3, moment_match = T, reloo = T)
 
 looic <- c(cod0_zinb_k3$criteria$loo$estimates["looic", "Estimate"],
            cod0s_zinb_k3$criteria$loo$estimates["looic", "Estimate"],
@@ -313,5 +317,3 @@ g <- ggplot(dat_ce) +
     theme_bw()
 print(g)
 ggsave("./figs/SSB_predicted_effect_cod2sg3_zinb_k3.png", width = 5, height = 4)
-
-
