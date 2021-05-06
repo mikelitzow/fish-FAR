@@ -13,9 +13,11 @@ library(brms)
 library(bayesplot)
 source("./scripts/stan_utils.R")
 
+theme_set(theme_bw())
 
 ## Read in data --------------------------------------------
 cod.data <- read.csv("data/cpue.data.csv")
+cod.data$cod <- cod.data$cod.age.0
 cod.data$bay_fac <- as.factor(cod.data$bay)
 cod.data$year_fac <- as.factor(cod.data$year)
 cod.data$site_fac <- as.factor(cod.data$site)
@@ -163,8 +165,7 @@ cor(plot) # r = 0.85
 
 ggplot(plot, aes(ln_seine_cpue, ln_assessment_model_R)) +
   geom_text(aes(label=year)) +
-  ggtitle("2006-2016") +
-  theme_bw()
+  ggtitle("2006-2016") 
 
 ggsave("./figs/seine_assessment_model_recruitment_comparison.png", width = 5, height = 4)
 
