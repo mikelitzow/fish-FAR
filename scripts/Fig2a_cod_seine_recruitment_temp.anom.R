@@ -175,7 +175,7 @@ cod2sg_zinb_k3 <- brm(cod2sg_formula,
                    control = list(adapt_delta = 0.999, max_treedepth = 10))
 cod2sg_zinb_k3  <- add_criterion(cod2sg_zinb_k3, c("loo", "bayes_R2"),
                                  moment_match = TRUE, reloo = TRUE,
-                                 cores = 4, k_threshold = 0.7) # warning - set seed = T
+                                 cores = 4, k_threshold = 0.7)
 saveRDS(cod2sg_zinb_k3, file = "output/cod2sg_zinb_k3.rds")
 
 cod2sg_zinb_k3 <- readRDS("./output/cod2sg_zinb_k3.rds")
