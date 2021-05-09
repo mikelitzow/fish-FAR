@@ -149,7 +149,7 @@ cod.sub <- lapply(cod.sub, attributes)$FAR$points
 cod.sub$year <- 1977:2020
 
 # jitter x and y for plot
-f <- 35 # set jitter factor
+f <- 135 # set jitter factor
 set.seed(22)
 cod.sub$x.jitter <- jitter(cod.sub$FAR, factor=f)
 cod.sub$y.jitter <- jitter(cod.sub$resp__, factor=f)
