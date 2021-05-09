@@ -80,7 +80,7 @@ poll_recr_2_zinb_reduced_bays <- brm(recr_2_formula,
                         data = poll.data,
                         prior = priors_zinb,
                         family = zinb,
-                        cores = 4, chains = 4, iter = 6000,
+                        cores = 4, chains = 4, iter = 3000,
                         save_pars = save_pars(all = TRUE),
                         control = list(adapt_delta = 0.9999, max_treedepth = 12))
 poll_recr_2_zinb_reduced_bays  <- add_criterion(poll_recr_2_zinb_reduced_bays, c("loo", "bayes_R2"), moment_match = TRUE)
