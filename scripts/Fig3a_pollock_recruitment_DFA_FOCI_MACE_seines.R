@@ -14,6 +14,7 @@ theme_set(theme_bw())
 ## Fit brms model to beach seine data --------------------------------------------
 # read in data
 poll.data <- read.csv("data/cpue.data.csv")
+poll.data$pollock <- poll.data$pollock.age.0
 poll.data$bay_fac <- as.factor(poll.data$bay)
 poll.data$year_fac <- as.factor(poll.data$year)
 poll.data$site_fac <- as.factor(poll.data$site)
@@ -81,7 +82,7 @@ poll_recr_2_zinb_reduced_bays <- brm(recr_2_formula,
                         family = zinb,
                         cores = 4, chains = 4, iter = 6000,
                         save_pars = save_pars(all = TRUE),
-                        control = list(adapt_delta = 0.9999, max_treedepth = 10))
+                        control = list(adapt_delta = 0.9999, max_treedepth = 12))
 poll_recr_2_zinb_reduced_bays  <- add_criterion(poll_recr_2_zinb_reduced_bays, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(poll_recr_2_zinb_reduced_bays, file = "output/poll_recr_2_zinb_reduced_bays.rds")
 
