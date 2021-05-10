@@ -17,7 +17,7 @@ theme_set(theme_bw())
 # stock assessment model estimates
 recr <- read.csv("./data/cod_pollock_assessment_2020_SAFEs.csv")
 
-## note that we're only using FAR as SSB wasn't important in original model
+## note that we're only using FAR as SSB isn't part of projections
 
 # 2017-2020 recruitment estimates are poorly supported by data; discard
 recr$codR0.2020[recr$year >= 2017] <-  NA
