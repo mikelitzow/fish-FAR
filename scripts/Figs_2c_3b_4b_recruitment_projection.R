@@ -207,11 +207,11 @@ histor$decade <- "Historical"
 
 ## combine and plot with CIs
 pred.recr <- rbind(post, histor) %>%
-  group_by(decade) %>%
-  summarise(median=median(posterior),
+  dplyr::group_by(decade) %>%
+  dplyr::summarise(median=median(posterior),
             LCI=quantile(posterior, probs = 0.025),
             UCI=quantile(posterior, probs = 0.975)) %>%
-  filter(decade %in% c("2020s", "2030s", "2040s", "Historical"))
+  dplyr::filter(decade %in% c("2020s", "2030s", "2040s", "Historical"))
 
 pred.recr$order <- c(2,3,4,1)
 pred.recr$decade <- reorder(pred.recr$decade, pred.recr$order)
@@ -441,11 +441,11 @@ poll.histor$decade <- "Historical"
 
 ## combine and plot with CIs
 poll.pred.recr <- rbind(poll.post, poll.histor) %>%
-  group_by(decade) %>%
-  summarise(median=median(posterior),
+  dplyr::group_by(decade) %>%
+  dplyr::summarise(median=median(posterior),
             LCI=quantile(posterior, probs = 0.025),
             UCI=quantile(posterior, probs = 0.975)) %>%
-  filter(decade %in% c("2020s", "2030s", "2040s", "Historical"))
+  dplyr::filter(decade %in% c("2020s", "2030s", "2040s", "Historical"))
 
 poll.pred.recr$order <- c(2,3,4,1)
 poll.pred.recr$decade <- reorder(poll.pred.recr$decade, poll.pred.recr$order)
