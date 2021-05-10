@@ -115,7 +115,7 @@ cod0s_zinb_k3 <- brm(cod0s_formula,
                   save_pars = save_pars(all = TRUE),
                   control = list(adapt_delta = 0.99, max_treedepth = 10))
 cod0s_zinb_k3  <- add_criterion(cod0s_zinb_k3, c("loo", "bayes_R2"),
-                                moment_match = TRUE, reloo = FALSE,
+                                moment_match = TRUE, reloo = TRUE,
                                 cores = 4, k_threshold = 0.7)
 saveRDS(cod0s_zinb_k3, file = "output/cod0s_zinb_k3.rds")
 
