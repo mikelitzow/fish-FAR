@@ -591,6 +591,7 @@ dat_ce[["upper_90"]] <- ce1s_2$larval[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$larval[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$larval[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$larval[["lower__"]]
+
 # dat_ce[["rug.anom"]] <- c(jitter(unique(trend$far), amount = 0.01),
 #                           rep(NA, 100-length(unique(trend$far))))
 
