@@ -200,9 +200,6 @@ cod2sg_zinb_k3 <- readRDS("./output/cod2sg_zinb_k3.rds")
 loo(cod0_zinb_k3, cod0s_zinb_k3,
     cod1sg_zinb_k3, cod2sg_zinb_k3, moment_match = T, reloo = T)
 
-loo(cod0_zinb_k3, cod0s_zinb_k3,
-    cod1sg_zinb_k3, moment_match = T, reloo = T)
-
 looic <- c(cod0_zinb_k3$criteria$loo$estimates["looic", "Estimate"],
            cod0s_zinb_k3$criteria$loo$estimates["looic", "Estimate"],
            cod1sg_zinb_k3$criteria$loo$estimates["looic", "Estimate"],
