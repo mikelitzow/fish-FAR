@@ -112,7 +112,7 @@ fig.2b <- ggplot(plot, aes(far_fac, estimate__)) +
   geom_errorbar(aes(ymin=lower__, ymax=upper__), width=0.3, size=0.5) +
   ylab("Fish / set") +
   xlab("FAR") +
-  scale_x_discrete(labels=c(expression(""<=0.9), expression("">=0.98))) +
+  scale_x_discrete(labels=c(expression("<0.98"), expression("">=0.98))) +
   scale_y_continuous(breaks=c(1,5,10,50,100,150)) +
   coord_trans(y = "pseudo_log") + 
   theme_bw()
