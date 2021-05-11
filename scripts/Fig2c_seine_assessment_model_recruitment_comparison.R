@@ -92,7 +92,9 @@ recr_2_zinb <- brm(recr_2_formula,
                    cores = 4, chains = 4, iter = 3000,
                    save_pars = save_pars(all = TRUE),
                    control = list(adapt_delta = 0.999, max_treedepth = 10))
-recr_2_zinb  <- add_criterion(recr_2_zinb, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(recr_2_zinb, file = "output/recr_2_zinb.rds")
+recr_2_zinb  <- add_criterion(recr_2_zinb, c("loo", "bayes_R2"),
+                              moment_match = TRUE, reloo = TRUE, cores = 4)
 saveRDS(recr_2_zinb, file = "output/recr_2_zinb.rds")
 
 recr_2_zinb <- readRDS("./output/recr_2_zinb.rds")
