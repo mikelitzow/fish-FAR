@@ -26,9 +26,13 @@ m1_covars   <- c("DOY + bay",
 m1_delta    <- m1_looic - min(m1_looic)
 m1_tab      <- data.frame(name = m1_name,
                           response = m1_response,
+                          note = "Fig. 2a",
                           covars = m1_covars,
                           LOOIC = m1_looic,
                           LOOIC_delta = m1_delta)
+m1_tab <- m1_tab[order(m1_tab$LOOIC_delta), ]
+m1_tab$response <- c(m1_tab$response[1], rep("", nrow(m1_tab) - 1))
+m1_tab$note <- c(m1_tab$note[1], rep("", nrow(m1_tab) - 1))
 
 ## Best model
 m1_mat <- as.matrix(cod2sg_zinb_k3, pars = c("^Intercept", "sds_", "sd"))
@@ -39,10 +43,10 @@ m1_pars <- list(c("Intercept", "Intercept"),
                 c("Intercept_zi", "ZI Intercept"),
                 c("sds_sjulian_1", "SD Smooth: DOY"),
                 c("sds_stemp.anom_1", "SD Smooth: Temp"),
-                c("sds_sSSB_1", "SD Smooth: SSB"),
+                c("sds_sssb_1", "SD Smooth: SSB"),
                 c("sds_zi_sjulian_1", "ZI SD Smooth: DOY"),
                 c("sds_zi_stemp.anom_1", "ZI SD Smooth: Temp"),
-                c("sds_zi_sSSB_1", "ZI SD Smooth: SSB"),
+                c("sds_zi_sssb_1", "ZI SD Smooth: SSB"),
                 c("sd_bay_fac__Intercept", "SD: bay effect"),
                 c("sd_bay_fac:site_fac__Intercept", "SD: site effect"),
                 c("sd_bay_fac__zi_Intercept", "ZI SD: bay effect"),
@@ -62,14 +66,18 @@ loo(recr_1_zinb, recr_2_zinb)
 m2_looic    <- c(recr_1_zinb$criteria$loo$estimates["looic", "Estimate"],
               recr_2_zinb$criteria$loo$estimates["looic", "Estimate"])
 m2_name     <- rep("M2", length(m2_looic))
-m2_response <- rep("Cod seine abundance", length(m2_looic))
+m2_response <- rep("Cod annual seine abundance", length(m2_looic))
 m2_covars   <- c("year + DOY + bay", "year + DOY + bay/site")
 m2_delta    <- m2_looic - min(m2_looic)
 m2_tab      <- data.frame(name = m2_name,
                           response = m2_response,
+                          note = "For comparing to stock assessment model",
                           covars = m2_covars,
                           LOOIC = m2_looic,
                           LOOIC_delta = m2_delta)
+m2_tab <- m2_tab[order(m2_tab$LOOIC_delta), ]
+m2_tab$response <- c(m2_tab$response[1], rep("", nrow(m2_tab) - 1))
+m2_tab$note <- c(m2_tab$note[1], rep("", nrow(m2_tab) - 1))
 
 ## Best model
 m2_mat <- as.matrix(recr_2_zinb, pars = c("^Intercept", "sds_", "sd"))
@@ -100,14 +108,18 @@ loo(codR1_brm, codR2_brm)
 m3_looic    <- c(codR1_brm$criteria$loo$estimates["looic", "Estimate"],
               codR2_brm$criteria$loo$estimates["looic", "Estimate"])
 m3_name     <- rep("M3", length(m3_looic))
-m3_response <- rep("Cod model recruitment estimate", length(m3_looic))
+m3_response <- rep("Cod stock assessment model recruitment", length(m3_looic))
 m3_covars   <- c("seine + SSB", "seine")
 m3_delta    <- m3_looic - min(m3_looic)
 m3_tab      <- data.frame(name = m3_name,
                           response = m3_response,
+                          note = "To estimate 2017-2020 values in Fig. 2c",
                           covars = m3_covars,
                           LOOIC = m3_looic,
                           LOOIC_delta = m3_delta)
+m3_tab <- m3_tab[order(m3_tab$LOOIC_delta), ]
+m3_tab$response <- c(m3_tab$response[1], rep("", nrow(m3_tab) - 1))
+m3_tab$note <- c(m3_tab$note[1], rep("", nrow(m3_tab) - 1))
 
 ## Best model
 m3_mat <- as.matrix(codR2_brm, pars = c("^Intercept", "seine"))
@@ -149,9 +161,13 @@ m4_covars   <- c("FAR + SSB", "FAR",
 m4_delta    <- m4_looic - min(m4_looic)
 m4_tab      <- data.frame(name = m4_name,
                           response = m4_response,
+                          note = "Fig. 3a",
                           covars = m4_covars,
                           LOOIC = m4_looic,
                           LOOIC_delta = m4_delta)
+m4_tab <- m4_tab[order(m4_tab$LOOIC_delta), ]
+m4_tab$response <- c(m4_tab$response[1], rep("", nrow(m4_tab) - 1))
+m4_tab$note <- c(m4_tab$note[1], rep("", nrow(m4_tab) - 1))
 
 ## Best model
 m4_mat <- as.matrix(dfa2_far_brm, pars = c("^Intercept", "sds_", "sd"))
@@ -181,9 +197,13 @@ m5_covars   <- c("FAR", "FAR + SSB")
 m5_delta    <- m5_looic - min(m5_looic)
 m5_tab      <- data.frame(name = m5_name,
                           response = m5_response,
+                          note = "Fig. 3b",
                           covars = m5_covars,
                           LOOIC = m5_looic,
                           LOOIC_delta = m5_delta)
+m5_tab <- m5_tab[order(m5_tab$LOOIC_delta), ]
+m5_tab$response <- c(m5_tab$response[1], rep("", nrow(m5_tab) - 1))
+m5_tab$note <- c(m5_tab$note[1], rep("", nrow(m5_tab) - 1))
 
 ## Best model
 m5_mat <- as.matrix(poll.R1, pars = c("^Intercept", "sds_", "sd"))
@@ -199,8 +219,10 @@ for(i in seq_along(m5_pars)) {
 
 ## Final Table ---------------------------------------------
 model_select <- rbind(m1_tab, m2_tab, m3_tab, m4_tab, m5_tab)
+names(model_select) <- c("Model set", "Response variable", "Notes",
+                         "Covariates", "LOOIC", "delta_LOOIC")
 write.csv(model_select, "./output/model_select.csv", row.names = FALSE)
 
 model_best <- rbind(m1_best, m2_best, m3_best, m4_best, m5_best)
+names(model_best) <- c("Model set", "Parameter", "2.5%", "50%", "97.5%")
 write.csv(model_best, "./output/model_best.csv", row.names = FALSE)
-
