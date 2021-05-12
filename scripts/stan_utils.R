@@ -53,7 +53,7 @@ trace_plot <- function(stanfit, ...) {
         stop("Input not of class stanfit")
     }
 
-    draws     <- extract(stanfit, permuted = FALSE, ...)
+    draws     <- rstan::extract(stanfit, permuted = FALSE, ...)
     warmup    <- stanfit@stan_args[[1]]$warmup
     thin      <- stanfit@stan_args[[1]]$thin
     nchains   <- dim(stanfit)[2]
