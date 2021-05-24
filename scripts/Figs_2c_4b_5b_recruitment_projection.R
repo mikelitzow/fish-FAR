@@ -1,6 +1,8 @@
 ## predict the response of cod and pollock recruitment to FAR values
 ## in the observational record and for CMIP projections
-## currently used in Fig. 4b, and will become the new Figs. 2c, 3b
+## FAR-modeled recruitment fit for cod is Fig. 2c
+## FAR-modeled recruitment fit for pollock is Fig. 4b
+## predictions for both spp. conditioned on CMIP projections is Fig. 5b
 
 library(rstan)
 library(brms)
@@ -337,7 +339,7 @@ dat_ce[["lower_80"]] <- ce1s_3$FAR[["lower__"]]
 # dat_ce[["rug.anom"]] <- c(unique(poll.obs.dat$FAR),
 #                           rep(NA, 100-length(unique(poll.obs.dat$FAR))))
 
-fig.3b <- ggplot(dat_ce) +
+fig.4b <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
   geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
@@ -347,7 +349,7 @@ fig.3b <- ggplot(dat_ce) +
   theme_bw()+
   geom_text(data = poll.obs.dat,
             aes(x = FAR, y = sc.log.pollR0, label = year), color = "grey40", size = 3) 
-print(fig.3b)
+print(fig.4b)
 
 ## try adding uncertainty in FAR -----------------------------------------
 poll.R2 <- brm(sc.log.pollR0 ~ 1 + me(FAR, FAR.SE) + I(me(FAR, FAR.SE)^2),
@@ -437,8 +439,6 @@ for(i in 1977:2019){
 poll.histor$decade <- "Historical"
 
 
-
-
 ## combine and plot with CIs
 poll.pred.recr <- rbind(poll.post, poll.histor) %>%
   dplyr::group_by(decade) %>%
@@ -477,7 +477,7 @@ cod.poll.proj.R <- ggplot(all.plot, aes(decade, median, color=species)) +
 cod.poll.proj.R
 
 ggsave("./figs/hist-projected_poll_cod_ R.png", width = 3, height = 3)
-## this is Fig. 4b in the draft
+## this is Fig. 5b in the draft
 
 ## calculate change in medians ------------------------------------
 summ.dat <- all.plot %>%
