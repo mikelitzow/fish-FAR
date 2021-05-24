@@ -129,6 +129,9 @@ ppc_dens_overlay(y = y, yrep = yrep_mod_far_fixef[sample(nrow(yrep_mod_far_fixef
 
 ## Predicted effects ---------------------------------------
 
+# reload model object for FAR projected values
+mod_far_fixef <- readRDS("./output/mod_far_fixef.rds")
+
 ## Year predictions ##
 
 ## 95% CI
