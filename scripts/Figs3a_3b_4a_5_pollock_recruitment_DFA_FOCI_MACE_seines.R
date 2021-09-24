@@ -245,14 +245,14 @@ loadings <- data.frame(names = c("Larval", "Age-0 trawl", "Age-1", "Age-0 seine"
 loadings$order <- c(1,3,4,2)
 loadings$names <- reorder(loadings$names, loadings$order)
 
-load.plot <- ggplot(loadings, aes(names, loading)) +
+fig.3a <- ggplot(loadings, aes(names, loading)) +
   geom_bar(stat="identity", fill="light grey") +
   geom_errorbar(aes(ymin=lowCI, ymax=upCI), width=0.2) +
   theme(axis.title.x = element_blank(),
         axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
   labs(y = "DFA loading")
 
-load.plot
+fig.3a
 
 ggsave("./figs/full_pollock_DFA_loadings.png", width=2, height=2, units = 'in')
 
@@ -263,7 +263,7 @@ trend <- data.frame(year = 1980:2020,
                     ymin = as.vector(dfa.mod$states-1.96*dfa.mod$states.se),
                     ymax = as.vector(dfa.mod$states+1.96*dfa.mod$states.se))
 
-trend.plot<- ggplot(trend, aes(year, trend)) +
+fig.3b <- ggplot(trend, aes(year, trend)) +
   geom_ribbon(aes(ymin=ymin, ymax=ymax), fill="grey90") +
   geom_hline(yintercept = 0) +
   geom_line(color="red") +
@@ -271,22 +271,13 @@ trend.plot<- ggplot(trend, aes(year, trend)) +
   labs(y = "DFA trend") + 
   theme(axis.title.x = element_blank())
 
-trend.plot
+fig.3b
 
 write.csv(trend, "./output/full_poll_dfa_trend.csv")
 trend <- read.csv("./output/full_poll_dfa_trend.csv")
 
 ggsave("./figs/full_pollock_DFA_trend.png", width=3, height=2, units = 'in')
 
-# combine plots for SI
-png("./figs/full_DFA_loadings_trend_SI.png", width=7, height=3, units='in', res=300)
-
-ggpubr::ggarrange(load.plot, trend.plot, 
-                  ncol=2,
-                  labels=c("a", "b"),
-                  widths=c(0.5,1))
-
-dev.off()
 
 ## Fit brms model - FAR as continuous variable -------------------
 # load FAR estimates
