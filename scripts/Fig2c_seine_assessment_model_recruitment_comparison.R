@@ -13,9 +13,11 @@ library(brms)
 library(bayesplot)
 source("./scripts/stan_utils.R")
 
+theme_set(theme_bw())
 
 ## Read in data --------------------------------------------
 cod.data <- read.csv("data/cpue.data.csv")
+cod.data$cod <- cod.data$cod.age.0
 cod.data$bay_fac <- as.factor(cod.data$bay)
 cod.data$year_fac <- as.factor(cod.data$year)
 cod.data$site_fac <- as.factor(cod.data$site)
@@ -90,7 +92,9 @@ recr_2_zinb <- brm(recr_2_formula,
                    cores = 4, chains = 4, iter = 3000,
                    save_pars = save_pars(all = TRUE),
                    control = list(adapt_delta = 0.999, max_treedepth = 10))
-recr_2_zinb  <- add_criterion(recr_2_zinb, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(recr_2_zinb, file = "output/recr_2_zinb.rds")
+recr_2_zinb  <- add_criterion(recr_2_zinb, c("loo", "bayes_R2"),
+                              moment_match = TRUE, reloo = TRUE, cores = 4)
 saveRDS(recr_2_zinb, file = "output/recr_2_zinb.rds")
 
 recr_2_zinb <- readRDS("./output/recr_2_zinb.rds")
@@ -163,8 +167,7 @@ cor(plot) # r = 0.85
 
 ggplot(plot, aes(ln_seine_cpue, ln_assessment_model_R)) +
   geom_text(aes(label=year)) +
-  ggtitle("2006-2016") +
-  theme_bw()
+  ggtitle("2006-2016") 
 
 ggsave("./figs/seine_assessment_model_recruitment_comparison.png", width = 5, height = 4)
 
