@@ -467,16 +467,17 @@ poll.pred.recr$species <- "pollock"
 
 all.plot <- rbind(pred.recr, poll.pred.recr)
 
-cod.poll.proj.R <- ggplot(all.plot, aes(decade, median, color=species)) +
+fig.5b <- ggplot(all.plot, aes(decade, median, color=species)) +
   geom_point(size=2, position=position_dodge(width=0.5)) +
   geom_errorbar(aes(ymin=LCI, ymax=UCI), width=0.2, position=position_dodge(width=0.5)) +
+  geom_hline(yintercept = 0, size = 0.2) +
   ylab("Log recruitment anomaly") +
   theme(axis.title.x = element_blank(),
         legend.title = element_blank(),
         legend.position = c(0.8, 0.8)) +
   scale_color_manual(values=cb[c(2,4)])
 
-cod.poll.proj.R
+fig.5b
 
 ggsave("./figs/hist-projected_poll_cod_ R.png", width = 3, height = 3)
 ## this is Fig. 5b in the draft

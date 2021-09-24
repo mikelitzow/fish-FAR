@@ -159,6 +159,7 @@ print(g1)
 ggsave("./figs/year_predicted_effect_mod_far.png", width = 4.5, height = 2)
 
 ## and a version of the CMIP projections fit w/ 80, 90, 95% CI
+mod_far_fixef <- readRDS("./output/mod_far_fixef.rds")
 
 ## 95% CI
 ce1s_1 <- conditional_effects(mod_far_fixef, probs = c(0.025, 0.975))
@@ -188,7 +189,7 @@ pred.mod <- pred.mod %>%
 
 theme_set(theme_bw())
 
-CMIP.FAR <- ggplot(pred.mod) +
+fig.5a <- ggplot(pred.mod) +
   aes(x = year, y = estimate__) +
   geom_ribbon(aes(ymin = ymin.95, ymax = ymax.95), fill = "grey90") +
   geom_ribbon(aes(ymin = ymin.90, ymax = ymax.90), fill = "grey85") +
@@ -196,10 +197,10 @@ CMIP.FAR <- ggplot(pred.mod) +
   geom_line(size = 0.5, color = "red3") +
   # geom_hline(yintercept = 0.90, lty=2) +
   theme(axis.title.x = element_blank()) +
-  ylab("Fraction of attributable risk") +
+  ylab("Fraction of Attributable Risk (FAR)") +
   scale_x_continuous(breaks=seq(1990, 2040, 10)) 
 
-print(CMIP.FAR)
+print(fig.5a)
 
 ggsave("./figs/year_predicted_effect_mod_far_80_90_95_CI.png", width = 4, height = 3)
 
