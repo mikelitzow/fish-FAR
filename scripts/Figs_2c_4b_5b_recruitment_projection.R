@@ -317,7 +317,8 @@ poll.R1s <- readRDS("./output/poll_R1s_FAR_obs.rds")
 
 loo(poll.R1, poll.R1s)
 
-## plot R1 for Fig. 3b ------------------------------------
+## plot R1 for Fig. 4b ------------------------------------
+poll.R1 <- readRDS("./output/poll_R1_FAR_obs.rds")
 
 ## far predictions ##
 
@@ -337,8 +338,7 @@ dat_ce[["upper_90"]] <- ce1s_2$FAR[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$FAR[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$FAR[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$FAR[["lower__"]]
-# dat_ce[["rug.anom"]] <- c(unique(poll.obs.dat$FAR),
-#                           rep(NA, 100-length(unique(poll.obs.dat$FAR))))
+
 
 fig.4b <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -346,7 +346,8 @@ fig.4b <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Fraction of attributable risk", y = "Log recruitment anomaly") +
+  geom_hline(yintercept = 0, size = 0.2) +
+  labs(x = "Fraction of Attributable Risk (FAR)", y = "Log recruitment anomaly") +
   theme_bw()+
   geom_text(data = poll.obs.dat,
             aes(x = FAR, y = sc.log.pollR0, label = year), color = "grey40", size = 3) 

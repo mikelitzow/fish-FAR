@@ -10,12 +10,23 @@ ggarrange(ggarrange(fig.2a, fig.2b, ncol=2, widths = c(0.65, 0.35), labels = c("
           fig.2c, nrow=2, heights = c(0.4, 0.6), labels = c("a", "c", "c"))
 dev.off()
 
+## Fig. 3 ------------------------------------------------------------------
+
 png("./figs/fig_3.png", width=7, height=3, units='in', res=300)
 ggpubr::ggarrange(fig.3a, fig.3b, 
                   ncol=2,
                   labels=c("a", "b"),
                   widths=c(0.5,1))
 dev.off()
+
+## Fig. 4 ------------------------------------------------------------------
+
+png("./figs/fig_4.png", width=4, height=5.5, units='in', res=300)
+ggpubr::ggarrange(fig.4a, fig.4b, 
+                  ncol=1,
+                  labels=c("a", "b"))
+dev.off()
+
 
 ## combine cod-pollock R plot, pollock seine vs. FAR and pollock model recruitment vs. FAR plots ------------
 
