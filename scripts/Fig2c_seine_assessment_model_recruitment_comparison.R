@@ -125,14 +125,13 @@ loo(recr_1_zinb, recr_2_zinb)
 
 
 ## Predicted effects ---------------------------------------
-
+recr_2_zinb <- readRDS("./output/recr_2_zinb.rds")
 ## year predictions ##
 
 ## 95% CI
 ce1s_1 <- conditional_effects(recr_2_zinb, effect = "year_fac", re_formula = NA,
                               probs = c(0.025, 0.975))
 
-# ce1s_1 is far better!
 print(ce1s_1)
 
 # make a plot for the SI
@@ -163,7 +162,7 @@ plot <- data.frame(year=2006:2016,
                    ln_assessment_model_R=log(recr$codR0.2020[row.names(recr) %in% 2006:2016]),
                    ln_seine_cpue=log(ce1s_1$year_fac$estimate[1:length(2006:2016)]))
 
-cor(plot) # r = 0.85
+cor(plot) # r = 0.86
 
 ggplot(plot, aes(ln_seine_cpue, ln_assessment_model_R)) +
   geom_text(aes(label=year)) +
@@ -261,6 +260,7 @@ loo(codR1_brm, codR2_brm)
 
 
 ## plot predicted values codR2_brm ---------------------------------------
+codR2_brm  <- readRDS("./output/codR2_brm.rds")
 ## 95% CI
 ce1s_1 <- conditional_effects(codR2_brm, effect = "seine", re_formula = NA,
                               probs = c(0.025, 0.975))
