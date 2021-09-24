@@ -97,7 +97,7 @@ trace_plot(cod_far_zinb$fit)
 dev.off()
             
 ## Predicted effects ---------------------------------------
-
+cod_far_zinb <- readRDS("./output/cod_far_zinb.rds")
 ## 95% CI
 ce1s_1 <- conditional_effects(cod_far_zinb, effect = "far_fac", re_formula = NA,
                               probs = c(0.025, 0.975))  
