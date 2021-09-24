@@ -127,7 +127,7 @@ neff_lowest(R2$fit)
 rhat_highest(R2$fit)
 
 ## Predicted effects ---------------------------------------
-
+R1 <- readRDS("./output/cod_R_FAR_obs.rds")
 ## 95% CI
 ce1s_1 <- conditional_effects(R1, effect = "FAR", re_formula = NA,
                               probs = c(0.025, 0.975))
@@ -164,7 +164,7 @@ fig.2c <- ggplot(dat_ce) +
   geom_line(size = 1, color = "red3") +
   geom_text(data = cod.sub,
             aes(x = x.jitter, y = y.jitter, label = year), color = "grey40", size = 3) +
-  labs(x = "Fraction of attributable risk", y = "Log recruitment anomaly") +
+  labs(x = "Fraction of Attributable Risk (FAR)", y = "Log recruitment anomaly") +
   theme_bw()
 print(fig.2c)
 
