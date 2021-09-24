@@ -231,7 +231,7 @@ model.data
 # changing convergence criterion to ensure convergence
 cntl.list = list(minit=200, maxit=20000, allow.degen=FALSE, conv.test.slope.tol=0.1, abstol=0.0001)
 model.list = list(A="zero", m=1, R="diagonal and unequal")
-dfa.mod = MARSS(dfa.dat, model=model.list, z.score=TRUE, form="dfa")
+dfa.mod = MARSS(dfa.dat, model=model.list, z.score=TRUE, form="dfa", control = cntl.list)
 
 # get CI and plot loadings...
 modCI <- MARSSparamCIs(dfa.mod)
