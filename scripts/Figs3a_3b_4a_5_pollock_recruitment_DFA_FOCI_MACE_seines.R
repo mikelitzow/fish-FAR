@@ -394,6 +394,8 @@ loo(dfa1_far_brm, dfa2_far_brm)
 dfa1_far_formula_se <-  bf(trend ~ me(FAR, FAR.SE) + I(me(FAR, FAR.SE)))
                            
 ## plot predicted values ---------------------------------------
+dfa2_far_brm  <- readRDS("./output/dfa2_far_brm.rds")
+
 ## 95% CI
 ce1s_1 <- conditional_effects(dfa2_far_brm, effect = "far", re_formula = NA,
                               probs = c(0.025, 0.975))
@@ -414,17 +416,18 @@ dat_ce[["rug.anom"]] <- c(jitter(unique(trend$far), amount = 0.01),
                          rep(NA, 100-length(unique(trend$far))))
 
 
-fig.3a <- ggplot(dat_ce) +
+fig.4a <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
   geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Fraction of attributable risk", y = "DFA trend") +
+  geom_hline(yintercept = 0, size = 0.2) +
+  labs(x = "Fraction of Attributable Risk (FAR)", y = "DFA trend") +
   theme_bw()+
   geom_text(data = trend,
             aes(x = far, y = trend, label = year), color = "grey40", size = 3) 
-print(fig.3a)
+print(fig.4a)
 
 ggsave("./figs/continuous_far_predicted_effect_dfa2_far_brm.png", width = 3, height = 2)
 
