@@ -97,6 +97,10 @@ pred.obs <- left_join(obs.95, obs.90)
 pred.obs <- left_join(pred.obs, obs.80)
 pred.obs$year <- as.numeric(as.character(pred.obs$year_fac))
 
+# look at histogram of means
+ggplot(pred.obs, aes(estimate__)) +
+  geom_histogram(bins = 16, fill = "grey", color = "dark grey")
+
 far.fig <- ggplot(filter(pred.obs, year >= 1970)) +
   aes(x = year, y = estimate__) +
   geom_ribbon(aes(ymin = ymin.95, ymax = ymax.95), fill = "grey90") +
@@ -104,7 +108,7 @@ far.fig <- ggplot(filter(pred.obs, year >= 1970)) +
   geom_ribbon(aes(ymin = ymin.80, ymax = ymax.80), fill = "grey80") +
   geom_line(size = 0.5, color = "red3") +
   theme(axis.title.x = element_blank()) +
-  ylab("FAR") +
+  ylab("Fraction of Attributable Risk (FAR)") +
   scale_x_continuous(breaks=seq(1960, 2020, 10)) 
 
 print(far.fig)
@@ -191,8 +195,8 @@ ssb.fig <- ggplot(plot.s, aes(year, est/1000, color=sp, fill=sp)) +
   geom_ribbon(aes(ymin=UCI/1000, ymax=LCI/1000), alpha = 0.2, lty=0) +
   scale_color_manual(values=cb[c(2,4)]) +
   scale_fill_manual(values=cb[c(2,4)]) +
-  scale_y_continuous(breaks=c(50, 100, 200, 400, 600, 800)) +
-  ylab("Thousands of tons") +
+  scale_y_continuous(breaks=c(50, 100, 200, 400, 800)) +
+  ylab("Spawning stock biomass (1000s of tons)") +
   theme(axis.title.x = element_blank(),
         legend.title = element_blank(),
         legend.position = c(0.4, 0.2))
