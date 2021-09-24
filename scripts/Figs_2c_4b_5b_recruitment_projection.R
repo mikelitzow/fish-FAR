@@ -162,6 +162,7 @@ fig.2c <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
+  geom_hline(yintercept = 0, size = 0.2) +
   geom_text(data = cod.sub,
             aes(x = x.jitter, y = y.jitter, label = year), color = "grey40", size = 3) +
   labs(x = "Fraction of Attributable Risk (FAR)", y = "Log recruitment anomaly") +

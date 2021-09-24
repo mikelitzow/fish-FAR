@@ -213,6 +213,7 @@ print(df)
 # cod2sg_zinb_k3 is the selected model
 
 ## Predicted effects ---------------------------------------
+cod2sg_zinb_k3 <- readRDS("./output/cod2sg_zinb_k3.rds")
 
 ## temp.anom predictions ##
 
