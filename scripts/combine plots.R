@@ -47,7 +47,7 @@ image_write(stack, path = "figs/pollock_R_FAR_stack.png", format = "png")
 ## combine modeled CMIP FAR projections and cod-pollock projected R plot ------------------------
 plot.nil <- ggplot() + theme_void()
 
-png("./figs/fig_5.png", width=7, height=7, units='in', res=300)
+png("./figs/fig_5.png", width=6.5, height=6.5, units='in', res=300)
 ggpubr::ggarrange(fig.5a, 
                   ggpubr::ggarrange(fig.5b, plot.nil, widths=c(0.7, 0.3)),
                             ncol=1, heights=c(1,0.9), labels = "auto")
